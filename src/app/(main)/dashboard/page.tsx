@@ -1,9 +1,10 @@
 'use client';
 
-import { useAuth } from '../../hooks/useAuth';
-import { useLogout } from '../../hooks/useLogout';
+import { useAuth } from '@/app/hooks/useAuth';
+import { useLogout } from '@/app/hooks/useLogout';
+import Header from '@/components/common/Header';
 import { BookOpen, Check, ChevronRight, Flame, Headphones, LayoutDashboard, LogOut, Settings, Sparkles } from 'lucide-react';
-import { Button } from '../../../../components/ui/button';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const {
@@ -49,13 +50,12 @@ export default function DashboardPage() {
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="flex items-center justify-between border-b border-border/80 bg-background/80 px-6 py-5 backdrop-blur sm:px-10">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">Monday, 20 September</p>
-            <h1 className="mt-1 font-display text-2xl sm:text-3xl">Good morning, {user?.name?.split(' ')[0] || 'reader'}.</h1>
-          </div>
-          <div className="grid size-10 place-items-center rounded-full bg-accent font-semibold text-accent-foreground">{user?.name?.charAt(0).toUpperCase() || 'R'}</div>
-        </header>
+        <Header variant="app" />
+
+        <div className="border-b border-border/80 bg-background/80 px-6 py-5 backdrop-blur sm:px-10">
+          <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">Monday, 20 September</p>
+          <h1 className="mt-1 font-display text-2xl sm:text-3xl">Good morning, {user?.name?.split(' ')[0] || 'reader'}.</h1>
+        </div>
 
         <div className="mx-auto max-w-6xl px-6 py-8 sm:px-10 lg:py-12">
           <section className="grid gap-5 xl:grid-cols-[1.45fr_0.8fr]">

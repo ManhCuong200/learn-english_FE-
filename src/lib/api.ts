@@ -3,7 +3,7 @@ import type {
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
-} from '../types/auth';
+} from '@/types/auth';
 
 const API_URL = 'http://localhost:3000';
 

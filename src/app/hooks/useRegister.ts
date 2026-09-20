@@ -1,18 +1,15 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-
-import { register } from '../../../lib/api';
-import type { RegisterRequest } from '../../../types/auth';
+import { apiFetch } from '@/lib/api';
+import type { RegisterRequest, RegisterResponse } from '@/types/auth';
 
 export function useRegister() {
-  const router = useRouter();
-
   return useMutation({
-    mutationFn: (request: RegisterRequest) => register(request),
-    onSuccess: () => {
-      router.push('/login');
-    },
+    mutationFn: (data: RegisterRequest) =>
+      apiFetch<RegisterResponse>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   });
 }

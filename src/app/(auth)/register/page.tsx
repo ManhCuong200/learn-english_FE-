@@ -1,138 +1,170 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useState } from 'react';
-
-import { ArrowRight, BookOpen, Mail, LockKeyhole, UserRound } from 'lucide-react';
-import { Button } from '../../../../components/ui/button';
-import { useRegister } from '../../hooks/useRegister';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRegister } from '@/app/hooks/useRegister';
+import {
+  registerSchema,
+  type RegisterFormData,
+} from '@/lib/validations/auth';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const router = useRouter();
   const registerMutation = useRegister();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+  });
 
-    registerMutation.mutate({ name, email, password });
+  async function onSubmit(
+    data: RegisterFormData,
+  ): Promise<void> {
+    try {
+      await registerMutation.mutateAsync(data);
+      router.push('/login');
+    } catch {
+      // Error is displayed from registerMutation.error
+    }
   }
 
   return (
-    <div className="w-full max-w-[420px]">
-        <div className="mb-9">
-          <div className="mb-8 flex items-center gap-2 text-sm font-semibold tracking-[0.15em] text-primary uppercase lg:hidden">
-            <BookOpen className="size-5" /> Eunoia English
-          </div>
-          <p className="mb-3 text-sm font-semibold tracking-[0.14em] text-primary uppercase">Your reading practice starts here</p>
-          <h1 className="font-display text-4xl leading-tight tracking-tight sm:text-5xl">
+    <main className="flex min-h-screen items-center justify-center px-6 py-12">
+      <div className="w-full max-w-xl">
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-bold tracking-tight">
             Create an account
           </h1>
-          <p className="mt-4 text-base leading-7 text-muted-foreground">
-            Build a daily rhythm that makes better English feel natural.
+
+          <p className="mt-3 text-base text-muted-foreground">
+            Start learning English today.
           </p>
         </div>
 
+        {/* Server error */}
+        {registerMutation.isError && (
+          <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {registerMutation.error.message}
+          </div>
+        )}
+
+        {/* Form */}
         <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
         >
+          {/* Name */}
           <div className="space-y-2">
             <label
               htmlFor="name"
-              className="text-sm font-semibold"
+              className="text-base font-medium"
             >
               Name
             </label>
 
-            <div className="relative mt-2">
-              <UserRound className="absolute top-3.5 left-3.5 size-4 text-muted-foreground" />
-              <input
+            <input
               id="name"
               type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
               placeholder="Your name"
-              required
-              minLength={2}
-              maxLength={50}
-                className="w-full rounded-xl border bg-card py-3 pl-10 pr-4 outline-none transition placeholder:text-muted-foreground/60 focus:border-primary focus:ring-4 focus:ring-primary/10"
-              />
-            </div>
+              autoComplete="name"
+              disabled={registerMutation.isPending}
+              {...register('name')}
+              className="w-full rounded-lg border bg-background px-4 py-3.5 text-base outline-none transition focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            />
+
+            {errors.name && (
+              <p className="text-sm text-destructive">
+                {errors.name.message}
+              </p>
+            )}
           </div>
 
+          {/* Email */}
           <div className="space-y-2">
             <label
               htmlFor="email"
-              className="text-sm font-semibold"
+              className="text-base font-medium"
             >
               Email
             </label>
 
-            <div className="relative mt-2">
-              <Mail className="absolute top-3.5 left-3.5 size-4 text-muted-foreground" />
-              <input
+            <input
               id="email"
               type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
-              required
-                className="w-full rounded-xl border bg-card py-3 pl-10 pr-4 outline-none transition placeholder:text-muted-foreground/60 focus:border-primary focus:ring-4 focus:ring-primary/10"
-              />
-            </div>
+              autoComplete="email"
+              disabled={registerMutation.isPending}
+              {...register('email')}
+              className="w-full rounded-lg border bg-background px-4 py-3.5 text-base outline-none transition focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            />
+
+            {errors.email && (
+              <p className="text-sm text-destructive">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
+          {/* Password */}
           <div className="space-y-2">
             <label
               htmlFor="password"
-              className="text-sm font-semibold"
+              className="text-base font-medium"
             >
               Password
             </label>
 
-            <div className="relative mt-2">
-              <LockKeyhole className="absolute top-3.5 left-3.5 size-4 text-muted-foreground" />
-              <input
+            <input
               id="password"
               type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="••••••••"
-              required
-              minLength={8}
-              maxLength={72}
-                className="w-full rounded-xl border bg-card py-3 pl-10 pr-4 outline-none transition placeholder:text-muted-foreground/60 focus:border-primary focus:ring-4 focus:ring-primary/10"
-              />
-            </div>
+              placeholder="At least 8 characters"
+              autoComplete="new-password"
+              disabled={registerMutation.isPending}
+              {...register('password')}
+              className="w-full rounded-lg border bg-background px-4 py-3.5 text-base outline-none transition focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            />
+
+            {errors.password && (
+              <p className="text-sm text-destructive">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
-          {registerMutation.error && (
-            <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {registerMutation.error.message}
-            </p>
-          )}
-
-          <Button
+          {/* Submit */}
+          <button
             type="submit"
             disabled={registerMutation.isPending}
-            size="lg"
-            className="h-12 w-full rounded-xl bg-primary font-semibold text-primary-foreground hover:bg-primary/90"
+            className="w-full rounded-lg bg-primary px-4 py-3.5 text-base font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {registerMutation.isPending ? 'Creating account...' : <>Create account <ArrowRight /></>}
-          </Button>
+            {registerMutation.isPending
+              ? 'Creating account...'
+              : 'Create account'}
+          </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        {/* Login */}
+        <p className="mt-8 text-center text-base text-muted-foreground">
           Already have an account?{' '}
           <Link
             href="/login"
-            className="font-medium text-foreground hover:underline"
+            className="font-semibold text-foreground hover:underline"
           >
-            Sign in
+            Login
           </Link>
         </p>
       </div>
+    </main>
   );
 }

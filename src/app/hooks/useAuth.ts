@@ -1,10 +1,9 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-
-import { apiFetch } from '../../../lib/api';
-import type { AuthUser } from '../../../types/auth';
-import { authQueryKey } from './useLogin';
+import { apiFetch } from '@/lib/api';
+import { authQueryKey } from '@/lib/queryKeys';
+import type { AuthUser } from '@/types/auth';
 
 export function useAuth() {
   const query = useQuery({

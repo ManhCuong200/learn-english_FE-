@@ -1,22 +1,21 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-
-import { login } from '../../../lib/api';
-import type { LoginRequest, AuthUser } from '../../../types/auth';
-
-export const authQueryKey = ['auth', 'me'] as const;
+import { apiFetch } from '@/lib/api';
+import { authQueryKey } from '@/lib/queryKeys';
+import type { AuthUser, LoginRequest, LoginResponse } from '@/types/auth';
 
 export function useLogin() {
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: LoginRequest) => login(request),
-    onSuccess: ({ user }: { user: AuthUser }) => {
-      queryClient.setQueryData(authQueryKey, user);
-      router.push('/dashboard');
+    mutationFn: (data: LoginRequest) =>
+      apiFetch<LoginResponse>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: ({ user }) => {
+      queryClient.setQueryData<AuthUser>(authQueryKey, user);
     },
   });
 }
