@@ -1,14 +1,13 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { getCurrentUser } from '@/lib/api/auth';
 import { authQueryKey } from '@/lib/queryKeys';
-import type { AuthUser } from '@/types/auth';
 
 export const useAuth = () => {
   const query = useQuery({
     queryKey: authQueryKey,
-    queryFn: () => apiFetch<AuthUser>('/auth/me'),
+    queryFn: getCurrentUser,
   });
 
   return {

@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { logout } from '@/lib/api';
+import { logout } from '@/lib/api/auth';
 import { authQueryKey } from '@/lib/queryKeys';
 
 export const useLogout = () => {

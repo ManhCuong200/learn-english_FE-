@@ -1,10 +1,3 @@
-import type {
-  LoginRequest,
-  LoginResponse,
-  RegisterRequest,
-  RegisterResponse,
-} from '@/types/auth';
-
 const API_URL = 'http://localhost:3000';
 
 export class ApiError extends Error {
@@ -52,24 +45,4 @@ export const apiFetch = async <T>(
   }
 
   return data as T;
-};
-
-export const logout = async (): Promise<void> => {
-  await apiFetch<{ message: string }>('/auth/logout', {
-    method: 'POST',
-  });
-};
-
-export const login = (request: LoginRequest) => {
-  return apiFetch<LoginResponse>('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify(request),
-  });
-};
-
-export const register = (request: RegisterRequest) => {
-  return apiFetch<RegisterResponse>('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(request),
-  });
 };

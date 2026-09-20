@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { adminLogin, adminLogout } from '@/lib/adminApi';
+import { adminLogin, adminLogout } from '@/lib/api/admin';
 import { adminQueryKeys } from '@/lib/adminQueryKeys';
 
 export const useAdminLogin = () => {
