@@ -9,8 +9,11 @@ import {
   loginSchema,
   type LoginFormData,
 } from '@/lib/validations/auth';
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
+import {Label} from "@/components/ui/label";
 
-export default function LoginPage() {
+const LoginPage = () => {
   const router = useRouter();
   const loginMutation = useLogin();
 
@@ -26,12 +29,12 @@ export default function LoginPage() {
     },
   });
 
-  async function onSubmit(data: LoginFormData): Promise<void> {
+  const onSubmit = async (data: LoginFormData): Promise<void> => {
     try {
       await loginMutation.mutateAsync(data);
-      router.push('/dashboard');
+      router.push('/');
     } catch {}
-  }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-12">
@@ -61,14 +64,14 @@ export default function LoginPage() {
         >
           {/* Email */}
           <div className="space-y-2">
-            <label
+            <Label
               htmlFor="email"
               className="text-base font-medium"
             >
               Email
-            </label>
+            </Label>
 
-            <input
+            <Input
               id="email"
               type="email"
               placeholder="you@example.com"
@@ -121,7 +124,7 @@ export default function LoginPage() {
           </div>
 
           {/* Submit */}
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting || loginMutation.isPending}
             className="w-full rounded-lg bg-primary px-4 py-3.5 text-base font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
@@ -129,7 +132,7 @@ export default function LoginPage() {
             {isSubmitting || loginMutation.isPending
               ? 'Logging in...'
               : 'Login'}
-          </button>
+          </Button>
         </form>
 
         {/* Register */}
@@ -145,4 +148,6 @@ export default function LoginPage() {
       </div>
     </main>
   );
-}
+};
+
+export default LoginPage;

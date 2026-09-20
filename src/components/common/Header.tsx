@@ -29,7 +29,7 @@ type HeaderProps = {
   variant?: 'public' | 'app';
 };
 
-export default function Header({ variant = 'public' }: HeaderProps) {
+const Header = ({ variant = 'public' }: HeaderProps) => {
   const { user, isLoading } = useAuth();
   const logoutMutation = useLogout();
   const isPublic = variant === 'public';
@@ -44,7 +44,7 @@ export default function Header({ variant = 'public' }: HeaderProps) {
     >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-10 lg:px-12">
         <Link
-          href={isPublic ? '/' : '/dashboard'}
+          href={isPublic ? '/' : '/learning'}
           className={`flex items-center gap-3 text-sm font-bold tracking-[0.16em] uppercase ${
             isPublic ? 'text-[#1e3036]' : 'text-foreground'
           }`}
@@ -188,4 +188,6 @@ export default function Header({ variant = 'public' }: HeaderProps) {
       </div>
     </header>
   );
-}
+};
+
+export default Header;

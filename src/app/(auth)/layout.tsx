@@ -1,8 +1,8 @@
-export default function AuthLayout({
+const AuthLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <main className="grid min-h-screen bg-background lg:grid-cols-[minmax(360px,0.85fr)_minmax(480px,1.15fr)]">
       <aside className="relative hidden overflow-hidden bg-[#21333a] px-12 py-10 text-[#f7f4eb] lg:flex lg:flex-col lg:justify-between xl:px-20">
@@ -27,4 +27,6 @@ export default function AuthLayout({
       </section>
     </main>
   );
-}
+};
+
+export default AuthLayout;

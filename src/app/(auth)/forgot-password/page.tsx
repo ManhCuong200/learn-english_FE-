@@ -2,23 +2,25 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-
 import { useForgotPassword } from '@/app/hooks/useForgotPassword';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
-export default function ForgotPasswordPage() {
+const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
 
   const forgotPasswordMutation = useForgotPassword();
 
-  function handleSubmit(
+  const handleSubmit = (
     event: React.FormEvent<HTMLFormElement>,
-  ) {
+  ) => {
     event.preventDefault();
 
     forgotPasswordMutation.mutate({
       email: email.trim(),
     });
-  }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
@@ -51,14 +53,14 @@ export default function ForgotPasswordPage() {
           className="space-y-5"
         >
           <div className="space-y-2">
-            <label
+            <Label
               htmlFor="email"
               className="text-sm font-medium"
             >
               Email
-            </label>
+            </Label>
 
-            <input
+            <Input
               id="email"
               type="email"
               placeholder="you@example.com"
@@ -72,7 +74,7 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={
               forgotPasswordMutation.isPending
@@ -82,7 +84,7 @@ export default function ForgotPasswordPage() {
             {forgotPasswordMutation.isPending
               ? 'Sending...'
               : 'Send reset link'}
-          </button>
+          </Button>
         </form>
 
         <div className="mt-6 text-center">
@@ -96,4 +98,6 @@ export default function ForgotPasswordPage() {
       </div>
     </main>
   );
-}
+};
+
+export default ForgotPasswordPage;

@@ -5,7 +5,7 @@ import { apiFetch } from '@/lib/api';
 import { authQueryKey } from '@/lib/queryKeys';
 import type { AuthUser, LoginRequest, LoginResponse } from '@/types/auth';
 
-export function useLogin() {
+export const useLogin = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -18,4 +18,4 @@ export function useLogin() {
       queryClient.setQueryData<AuthUser>(authQueryKey, user);
     },
   });
-}
+};

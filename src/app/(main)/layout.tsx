@@ -5,17 +5,13 @@ import { useRouter } from 'next/navigation';
 
 import { useAuth } from '@/app/hooks/useAuth';
 
-export default function MainLayout({
+const MainLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   const router = useRouter();
-
-  const {
-    isLoading,
-    isAuthenticated,
-  } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -39,4 +35,6 @@ export default function MainLayout({
   }
 
   return <>{children}</>;
-}
+};
+
+export default MainLayout;

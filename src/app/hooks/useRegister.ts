@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import type { RegisterRequest, RegisterResponse } from '@/types/auth';
 
-export function useRegister() {
+export const useRegister = () => {
   return useMutation({
     mutationFn: (data: RegisterRequest) =>
       apiFetch<RegisterResponse>('/auth/register', {
@@ -12,4 +12,4 @@ export function useRegister() {
         body: JSON.stringify(data),
       }),
   });
-}
+};

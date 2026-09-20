@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import type { ResetPasswordRequest, ResetPasswordResponse } from '@/types/auth';
 
-export function useResetPassword() {
+export const useResetPassword = () => {
   return useMutation({
     mutationFn: (data: ResetPasswordRequest) =>
       apiFetch<ResetPasswordResponse>(
@@ -16,4 +16,4 @@ export function useResetPassword() {
         },
       ),
   });
-}
+};

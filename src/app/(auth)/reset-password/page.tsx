@@ -2,11 +2,29 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-
+import { Suspense, useState } from 'react';
 import { useResetPassword } from '@/app/hooks/useResetPassword';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
-export default function ResetPasswordPage() {
+const ResetPasswordPage = () => {
+  return (
+    <Suspense fallback={<ResetPasswordLoading />}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+const ResetPasswordLoading = () => {
+  return (
+    <main className="flex min-h-screen items-center justify-center px-4">
+      <p className="text-sm text-muted-foreground">Loading reset form...</p>
+    </main>
+  );
+}
+
+const ResetPasswordForm = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -21,9 +39,9 @@ export default function ResetPasswordPage() {
     confirmPassword.length > 0 &&
     password !== confirmPassword;
 
-  function handleSubmit(
+  const handleSubmit = (
     event: React.FormEvent<HTMLFormElement>,
-  ) {
+  ) => {
     event.preventDefault();
 
     if (!token || passwordMismatch) {
@@ -34,7 +52,7 @@ export default function ResetPasswordPage() {
       token,
       password,
     });
-  }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
@@ -72,14 +90,14 @@ export default function ResetPasswordPage() {
           className="space-y-5"
         >
           <div className="space-y-2">
-            <label
+            <Label
               htmlFor="password"
               className="text-sm font-medium"
             >
               New password
-            </label>
+            </Label>
 
-            <input
+            <Input
               id="password"
               type="password"
               placeholder="Enter new password"
@@ -98,14 +116,14 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="space-y-2">
-            <label
+            <Label
               htmlFor="confirmPassword"
               className="text-sm font-medium"
             >
               Confirm password
-            </label>
+            </Label>
 
-            <input
+            <Input
               id="confirmPassword"
               type="password"
               placeholder="Confirm new password"
@@ -129,7 +147,7 @@ export default function ResetPasswordPage() {
             )}
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={
               !token ||
@@ -141,7 +159,7 @@ export default function ResetPasswordPage() {
             {resetPasswordMutation.isPending
               ? 'Resetting...'
               : 'Reset password'}
-          </button>
+          </Button>
         </form>
 
         <div className="mt-6 text-center">
@@ -155,4 +173,6 @@ export default function ResetPasswordPage() {
       </div>
     </main>
   );
-}
+  };
+
+  export default ResetPasswordPage;

@@ -9,8 +9,11 @@ import {
   registerSchema,
   type RegisterFormData,
 } from '@/lib/validations/auth';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
-export default function RegisterPage() {
+const RegisterPage = () => {
   const router = useRouter();
   const registerMutation = useRegister();
 
@@ -27,16 +30,16 @@ export default function RegisterPage() {
     },
   });
 
-  async function onSubmit(
+  const onSubmit = async (
     data: RegisterFormData,
-  ): Promise<void> {
+  ): Promise<void> => {
     try {
       await registerMutation.mutateAsync(data);
       router.push('/login');
     } catch {
       // Error is displayed from registerMutation.error
     }
-  }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-12">
@@ -66,14 +69,14 @@ export default function RegisterPage() {
         >
           {/* Name */}
           <div className="space-y-2">
-            <label
+            <Label
               htmlFor="name"
               className="text-base font-medium"
             >
               Name
-            </label>
+            </Label>
 
-            <input
+            <Input
               id="name"
               type="text"
               placeholder="Your name"
@@ -92,14 +95,14 @@ export default function RegisterPage() {
 
           {/* Email */}
           <div className="space-y-2">
-            <label
+            <Label
               htmlFor="email"
               className="text-base font-medium"
             >
               Email
-            </label>
+            </Label>
 
-            <input
+            <Input
               id="email"
               type="email"
               placeholder="you@example.com"
@@ -118,14 +121,14 @@ export default function RegisterPage() {
 
           {/* Password */}
           <div className="space-y-2">
-            <label
+            <Label
               htmlFor="password"
               className="text-base font-medium"
             >
               Password
-            </label>
+            </Label>
 
-            <input
+            <Input
               id="password"
               type="password"
               placeholder="At least 8 characters"
@@ -143,7 +146,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Submit */}
-          <button
+          <Button
             type="submit"
             disabled={registerMutation.isPending}
             className="w-full rounded-lg bg-primary px-4 py-3.5 text-base font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
@@ -151,7 +154,7 @@ export default function RegisterPage() {
             {registerMutation.isPending
               ? 'Creating account...'
               : 'Create account'}
-          </button>
+          </Button>
         </form>
 
         {/* Login */}
@@ -167,4 +170,6 @@ export default function RegisterPage() {
       </div>
     </main>
   );
-}
+};
+
+export default RegisterPage;

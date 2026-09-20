@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { logout } from '@/lib/api';
 import { authQueryKey } from '@/lib/queryKeys';
 
-export function useLogout() {
+export const useLogout = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -20,4 +20,4 @@ export function useLogout() {
       router.push('/login');
     },
   });
-}
+};

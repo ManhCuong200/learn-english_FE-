@@ -7,10 +7,20 @@ import type {
 
 const API_URL = 'http://localhost:3000';
 
-export async function apiFetch<T>(
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+export const apiFetch = async <T>(
   endpoint: string,
   options?: RequestInit,
-): Promise<T> {
+): Promise<T> => {
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     credentials: 'include',
@@ -20,47 +30,46 @@ export async function apiFetch<T>(
     },
   });
 
-  const data: unknown = await response.json();
+  const contentType = response.headers.get('content-type') ?? '';
+  const data: unknown = contentType.includes('application/json')
+    ? await response.json()
+    : null;
 
   if (!response.ok) {
-    if (
-      typeof data === 'object' &&
-      data !== null &&
-      'message' in data
-    ) {
+    if (typeof data === 'object' && data !== null && 'message' in data) {
       const message = data.message;
 
       if (typeof message === 'string') {
-        throw new Error(message);
+        throw new ApiError(message, response.status);
       }
 
       if (Array.isArray(message)) {
-        throw new Error(message.join(', '));
+        throw new ApiError(message.join(', '), response.status);
       }
     }
 
-    throw new Error('Something went wrong');
+    throw new ApiError('Something went wrong', response.status);
   }
 
   return data as T;
-}
+};
 
-export async function logout(): Promise<void> {
+export const logout = async (): Promise<void> => {
   await apiFetch<{ message: string }>('/auth/logout', {
     method: 'POST',
   });
-}
+};
 
-export function login(request: LoginRequest) {
+export const login = (request: LoginRequest) => {
   return apiFetch<LoginResponse>('/auth/login', {
     method: 'POST',
     body: JSON.stringify(request),
   });
-}
+};
 
-export function register(request: RegisterRequest) {
+export const register = (request: RegisterRequest) => {
   return apiFetch<RegisterResponse>('/auth/register', {
     method: 'POST',
     body: JSON.stringify(request),
   });
-}
+};

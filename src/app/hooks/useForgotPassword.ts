@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import type { ForgotPasswordRequest, ForgotPasswordResponse } from '@/types/auth';
 
-export function useForgotPassword() {
+export const useForgotPassword = () => {
   return useMutation({
     mutationFn: (data: ForgotPasswordRequest) =>
       apiFetch<ForgotPasswordResponse>(
@@ -15,4 +15,4 @@ export function useForgotPassword() {
         },
       ),
   });
-}
+};

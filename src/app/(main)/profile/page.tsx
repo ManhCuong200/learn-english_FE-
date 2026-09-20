@@ -19,7 +19,7 @@ const levelProgress = [
   { level: 'Advanced', score: 0, words: 0, exercises: 0 },
 ];
 
-export default function ProfilePage() {
+const ProfilePage = () => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -37,25 +37,25 @@ export default function ProfilePage() {
   return <ProfileEditor key={user.id} user={user} />;
 }
 
-function ProfileEditor({ user }: { user: AuthUser }) {
+const ProfileEditor = ({ user }: { user: AuthUser }) => {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [saved, setSaved] = useState(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaved(true);
-  }
+  };
 
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-6 py-10 sm:px-10 lg:py-14">
         <Link
-          href="/dashboard"
+          href="/learning"
           className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Back to dashboard
+          Back to home
         </Link>
 
         <div className="mt-8 flex flex-col justify-between gap-5 border-b border-border pb-8 sm:flex-row sm:items-end">
@@ -171,4 +171,6 @@ function ProfileEditor({ user }: { user: AuthUser }) {
       </div>
     </main>
   );
-}
+};
+
+export default ProfilePage;

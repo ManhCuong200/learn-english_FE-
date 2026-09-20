@@ -13,7 +13,7 @@ import {
 
 import Header from '@/components/common/Header';
 
-export default function HomePage() {
+const HomePage = () => {
 	return (
 		<main className="min-h-screen overflow-hidden bg-[#f5f1e8] text-[#1e3036]">
 			<Header />
@@ -210,4 +210,6 @@ export default function HomePage() {
 
 		</main>
 	);
-}
+};
+
+export default HomePage;
