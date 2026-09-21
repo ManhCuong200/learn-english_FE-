@@ -1,18 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, BookOpen, Check, LogOut, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { AlertCircle, BookOpen, Check, LayoutDashboard, LogOut, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { useAdminLogout } from '@/app/admin/_hooks/useAdminAuth';
 import { useAdminCategories, useAdminCategoryMutations, useAdminWordMutations, useAdminWords } from '@/app/admin/_hooks/useAdminData';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AppSidebar } from '@/components/common/AppSidebar';
 import { ApiError } from '@/api';
 import { clearAdminSession } from '@/app/admin/_hooks/useAdminAuth';
 import type { AdminCategory, AdminWord, CategoryInput, WordInput } from '@/types/admin';
+import { CategoryForm, WordForm } from '@/app/admin/_components/AdminForms';
+import { CategoryPanel, WordPanel } from '@/app/admin/_components/AdminDataPanels';
 
 const errorMessage = (error: unknown) => {
   return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
@@ -20,17 +21,6 @@ const errorMessage = (error: unknown) => {
 
 const isAuthError = (error: unknown) => {
   return error instanceof ApiError && (error.status === 401 || error.status === 403);
-};
-
-const toSlug = (value: string) => {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 50);
 };
 
 const AdminDashboardPage = () => {
@@ -128,8 +118,19 @@ const AdminDashboardPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#f4f5f1] text-[#203238]">
-      <header className="border-b border-[#dfe4dc] bg-[#203238] text-[#f7f4eb]">
+    <main className="min-h-screen bg-[#f4f5f1] text-[#203238] lg:flex">
+      <AppSidebar
+        brand="Eunoia Admin"
+        activeHref="/admin/dashboard"
+        items={[
+          { label: 'Content dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Learning app', href: '/learning', icon: BookOpen },
+        ]}
+        onSignOut={() => logoutMutation.mutate()}
+        isSigningOut={logoutMutation.isPending}
+      />
+      <div className="min-w-0 flex-1">
+      <header className="border-b border-[#dfe4dc] bg-[#203238] text-[#f7f4eb] lg:hidden">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-10 lg:px-12">
           <div className="flex items-center gap-3 text-sm font-bold tracking-[0.16em] uppercase">
             <span className="grid size-9 place-items-center rounded-full bg-[#f5c66f] text-lg text-[#203238]">e</span>
@@ -176,42 +177,20 @@ const AdminDashboardPage = () => {
         {!isLoading && activeTab === 'categories' && (
           <div className="mt-8 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
             <CategoryForm key={editingCategory?.id ?? 'new-category'} category={editingCategory} isPending={isMutating} onCancel={() => setEditingCategory(null)} onSubmit={handleCategorySubmit} />
-            <section className="rounded-2xl border border-[#dfe4dc] bg-white p-6 sm:p-8">
-              <div className="flex items-center justify-between"><div><h2 className="font-semibold">Categories</h2><p className="mt-1 text-sm text-[#657477]">Organize vocabulary by learning theme.</p></div><BookOpen className="size-5 text-[#c56b4e]" /></div>
-              <div className="mt-6 space-y-3">
-                {categories.map((category) => <div key={category.id} className="flex items-center justify-between rounded-xl border border-[#e6e9e4] p-4"><div><p className="font-semibold">{category.name}</p><p className="mt-1 text-sm text-[#657477]">/{category.slug}</p></div><div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => setEditingCategory(category)} aria-label={`Edit ${category.name}`}><Pencil className="size-4" /></Button><Button variant="ghost" size="icon" onClick={() => handleDeleteCategory(category.id)} aria-label={`Delete ${category.name}`}><Trash2 className="size-4 text-red-600" /></Button></div></div>)}
-                {categories.length === 0 && <p className="rounded-xl bg-[#f4f5f1] p-5 text-sm text-[#657477]">No categories yet. Create the first one.</p>}
-              </div>
-            </section>
+            <CategoryPanel categories={categories} onEdit={setEditingCategory} onDelete={handleDeleteCategory} />
           </div>
         )}
 
         {!isLoading && activeTab === 'words' && (
           <div className="mt-8 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
             <WordForm key={editingWord?.id ?? 'new-word'} word={editingWord} categories={categories} isPending={isMutating} onCancel={() => setEditingWord(null)} onSubmit={handleWordSubmit} />
-            <section className="rounded-2xl border border-[#dfe4dc] bg-white p-6 sm:p-8">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="font-semibold">Words</h2><p className="mt-1 text-sm text-[#657477]">Search and maintain the vocabulary bank.</p></div><form onSubmit={(event) => { event.preventDefault(); setSearch(searchInput.trim()); }} className="flex gap-2"><Input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search words" className="h-9 w-44" /><Button type="submit" size="icon" aria-label="Search words"><Search className="size-4" /></Button></form></div>
-              <div className="mt-6 space-y-3">
-                {words.map((word) => <div key={word.id} className="flex items-center justify-between gap-4 rounded-xl border border-[#e6e9e4] p-4"><div className="min-w-0"><p className="font-semibold">{word.word}</p><p className="mt-1 truncate text-sm text-[#657477]">{word.meaning || 'No meaning yet.'}{word.category?.name ? ` · ${word.category.name}` : ''}</p></div><div className="flex shrink-0 gap-1"><Button variant="ghost" size="icon" onClick={() => setEditingWord(word)} aria-label={`Edit ${word.word}`}><Pencil className="size-4" /></Button><Button variant="ghost" size="icon" onClick={() => handleDeleteWord(word.id)} aria-label={`Delete ${word.word}`}><Trash2 className="size-4 text-red-600" /></Button></div></div>)}
-                {words.length === 0 && <p className="rounded-xl bg-[#f4f5f1] p-5 text-sm text-[#657477]">No words found.</p>}
-              </div>
-            </section>
+            <WordPanel words={words} searchInput={searchInput} onSearchInputChange={setSearchInput} onSearch={() => setSearch(searchInput.trim())} onEdit={setEditingWord} onDelete={handleDeleteWord} />
           </div>
         )}
+      </div>
       </div>
     </main>
   );
 }
-
-const CategoryForm = ({ category, isPending, onCancel, onSubmit }: { category: AdminCategory | null; isPending: boolean; onCancel: () => void; onSubmit: (input: CategoryInput) => Promise<void> }) => {
-  const [name, setName] = useState(category?.name ?? '');
-  const [slug, setSlug] = useState(category?.slug ?? '');
-  return <form onSubmit={async (event) => { event.preventDefault(); await onSubmit({ name: name.trim(), slug: toSlug(slug || name) }); }} className="rounded-2xl border border-[#dfe4dc] bg-white p-6 sm:p-8"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-[#f7e3cf] text-[#c56b4e]"><Plus className="size-5" /></span><div><h2 className="font-semibold">{category ? 'Edit category' : 'New category'}</h2><p className="text-sm text-[#657477]">Give learners a clear path.</p></div></div><div className="mt-7 space-y-5"><div className="space-y-2"><Label htmlFor="category-name">Name</Label><Input id="category-name" value={name} onChange={(event) => { setName(event.target.value); if (!category) setSlug(toSlug(event.target.value)); }} required /></div><div className="space-y-2"><Label htmlFor="category-slug">Slug</Label><Input id="category-slug" value={slug} onChange={(event) => setSlug(toSlug(event.target.value))} minLength={2} maxLength={50} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /><p className="text-xs text-[#657477]">2–50 characters, lowercase letters, numbers and hyphens.</p></div><div className="flex gap-2"><Button type="submit" disabled={isPending || toSlug(slug || name).length < 2}>{isPending ? 'Saving...' : category ? 'Update category' : 'Create category'}</Button>{category && <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>}</div></div></form>;
-};
-
-const WordForm = ({ word, categories, isPending, onCancel, onSubmit }: { word: AdminWord | null; categories: AdminCategory[]; isPending: boolean; onCancel: () => void; onSubmit: (input: WordInput) => Promise<void> }) => {
-  const [value, setValue] = useState<WordInput>({ word: word?.word ?? '', meaning: word?.meaning ?? '', example: word?.example ?? '', categoryId: word?.categoryId ?? word?.category?.id ?? '' });
-  return <form onSubmit={async (event) => { event.preventDefault(); await onSubmit({ ...value, word: value.word.trim(), meaning: value.meaning.trim(), example: value.example?.trim(), categoryId: value.categoryId || undefined }); }} className="rounded-2xl border border-[#dfe4dc] bg-white p-6 sm:p-8"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-[#d9eee4] text-[#286052]"><Plus className="size-5" /></span><div><h2 className="font-semibold">{word ? 'Edit word' : 'New word'}</h2><p className="text-sm text-[#657477]">Add useful language to the library.</p></div></div><div className="mt-7 space-y-5"><div className="space-y-2"><Label htmlFor="word-value">Word</Label><Input id="word-value" value={value.word} onChange={(event) => setValue({ ...value, word: event.target.value })} required /></div><div className="space-y-2"><Label htmlFor="word-meaning">Meaning</Label><Input id="word-meaning" value={value.meaning} onChange={(event) => setValue({ ...value, meaning: event.target.value })} required /></div><div className="space-y-2"><Label htmlFor="word-example">Example</Label><textarea id="word-example" value={value.example} onChange={(event) => setValue({ ...value, example: event.target.value })} rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" /></div><div className="space-y-2"><Label htmlFor="word-category">Category</Label><select id="word-category" value={value.categoryId} onChange={(event) => setValue({ ...value, categoryId: event.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="">No category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div><div className="flex gap-2"><Button type="submit" disabled={isPending}>{isPending ? 'Saving...' : word ? 'Update word' : 'Create word'}</Button>{word && <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>}</div></div></form>;
-};
 
 export default AdminDashboardPage;
