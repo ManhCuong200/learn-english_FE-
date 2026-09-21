@@ -6,6 +6,7 @@ import { useToastManager } from '@/components/ui/toast';
 
 import { adminLogin, adminLogout } from '@/app/admin/_api/admin';
 import { adminQueryKeys } from '@/lib/adminQueryKeys';
+import { notifyError, notifySuccess } from '@/lib/notifications';
 
 export const useAdminLogin = () => {
   const queryClient = useQueryClient();
@@ -16,19 +17,14 @@ export const useAdminLogin = () => {
     mutationFn: adminLogin,
     onSuccess: (data) => {
       queryClient.setQueryData(adminQueryKeys.all, data);
-      toastManager.add({
-        type: 'success',
+      notifySuccess(toastManager, {
         title: 'Admin sign-in successful',
         description: 'Welcome to the content workspace.',
       });
       router.push('/admin/dashboard');
     },
     onError: (error) => {
-      toastManager.add({
-        type: 'error',
-        title: 'Admin sign-in failed',
-        description: error instanceof Error ? error.message : 'Please try again.',
-      });
+      notifyError(toastManager, 'Admin sign-in failed', error);
     },
   });
 };
@@ -42,19 +38,14 @@ export const useAdminLogout = () => {
     mutationFn: adminLogout,
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: adminQueryKeys.all });
-      toastManager.add({
-        type: 'success',
+      notifySuccess(toastManager, {
         title: 'Signed out',
         description: 'The admin session has ended.',
       });
       router.replace('/admin/login');
     },
     onError: (error) => {
-      toastManager.add({
-        type: 'error',
-        title: 'Sign out failed',
-        description: error instanceof Error ? error.message : 'Please try again.',
-      });
+      notifyError(toastManager, 'Sign out failed', error);
     },
   });
 };

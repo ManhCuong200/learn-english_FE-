@@ -1,14 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getCurrentUser } from '@/app/(auth)/_api/auth';
-import { authQueryKey } from '@/lib/queryKeys';
+
+import { authQueryOptions } from '@/lib/authQuery';
 
 export const useAuth = () => {
-  const query = useQuery({
-    queryKey: authQueryKey,
-    queryFn: getCurrentUser,
-  });
+  const query = useQuery(authQueryOptions());
 
   return {
     user: query.data ?? null,

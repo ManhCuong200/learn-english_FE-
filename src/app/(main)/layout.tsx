@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAuth } from '@/app/(auth)/_hooks/useAuth';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 const MainLayout = ({
   children,
@@ -19,22 +20,16 @@ const MainLayout = ({
     }
   }, [isLoading, isAuthenticated, router]);
 
-  if (isLoading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-sm font-semibold tracking-[0.14em] text-primary uppercase">
-          <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">e</span>
-          Loading your library...
-        </div>
-      </main>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  return <>{children}</>;
+  return (
+    <ProtectedRoute
+      isLoading={isLoading}
+      isAuthenticated={isAuthenticated}
+      redirectTo="/login"
+      loadingText="Loading your library..."
+    >
+      {children}
+    </ProtectedRoute>
+  );
 };
 
 export default MainLayout;

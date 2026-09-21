@@ -1,4 +1,5 @@
 import QueryProvider from '@/providers/QueryProvider';
+import { AuthProvider } from '@/providers/AuthProvider';
 import { Toaster } from '@/components/ui/toast';
 import './globals.css';
 
@@ -11,9 +12,11 @@ const RootLayout = ({
     <html lang="en">
       <body>
         <QueryProvider>
-          <Toaster>
-            {children}
-          </Toaster>
+          <AuthProvider>
+            <Toaster>
+              {children}
+            </Toaster>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

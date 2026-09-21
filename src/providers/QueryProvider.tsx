@@ -13,8 +13,10 @@ const QueryProvider = ({
       new QueryClient({
         defaultOptions: {
           queries: {
-            retry: false,
+            retry: 1,
+            staleTime: 30_000,
             refetchOnWindowFocus: false,
+            refetchOnReconnect: true,
           },
         },
       }),

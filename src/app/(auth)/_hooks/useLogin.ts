@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToastManager } from '@/components/ui/toast';
 import { login } from '@/app/(auth)/_api/auth';
 import { authQueryKey } from '@/lib/queryKeys';
+import { notifyError, notifySuccess } from '@/lib/notifications';
+import { authQueryOptions } from '@/lib/authQuery';
 import type { AuthUser, LoginRequest } from '@/types/auth';
 
 export const useLogin = () => {
@@ -14,18 +16,14 @@ export const useLogin = () => {
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: ({ user }) => {
       queryClient.setQueryData<AuthUser>(authQueryKey, user);
-      toastManager.add({
-        type: 'success',
+      queryClient.invalidateQueries({ queryKey: authQueryKey });
+      notifySuccess(toastManager, {
         title: 'Welcome back',
         description: 'You have signed in successfully.',
       });
     },
     onError: (error) => {
-      toastManager.add({
-        type: 'error',
-        title: 'Login failed',
-        description: error instanceof Error ? error.message : 'Please try again.',
-      });
+      notifyError(toastManager, 'Login failed', error);
     },
   });
 };

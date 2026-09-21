@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useToastManager } from '@/components/ui/toast';
 import { logout } from '@/app/(auth)/_api/auth';
 import { authQueryKey } from '@/lib/queryKeys';
+import { notifyError, notifySuccess } from '@/lib/notifications';
+import { authQueryOptions } from '@/lib/authQuery';
 
 export const useLogout = () => {
   const router = useRouter();
@@ -13,25 +15,17 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: logout,
-
     onSuccess: () => {
-      queryClient.removeQueries({
-        queryKey: authQueryKey,
-      });
-
-      toastManager.add({
-        type: 'success',
+      queryClient.removeQueries({ queryKey: authQueryKey });
+      queryClient.invalidateQueries({ queryKey: authQueryKey });
+      notifySuccess(toastManager, {
         title: 'Signed out',
         description: 'You have been signed out successfully.',
       });
       router.push('/login');
     },
     onError: (error) => {
-      toastManager.add({
-        type: 'error',
-        title: 'Sign out failed',
-        description: error instanceof Error ? error.message : 'Please try again.',
-      });
+      notifyError(toastManager, 'Sign out failed', error);
     },
   });
 };
