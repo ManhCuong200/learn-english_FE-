@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 
 import { authQueryOptions } from '@/lib/authQuery';
 import type { AuthUser } from '@/types/auth';
@@ -17,7 +18,14 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const query = useQuery(authQueryOptions());
+  const pathname = usePathname();
+  const shouldCheckSession =
+    !pathname.startsWith('/admin') &&
+    !['/login', '/register', '/forgot-password', '/reset-password'].includes(pathname);
+  const query = useQuery({
+    ...authQueryOptions(),
+    enabled: shouldCheckSession,
+  });
 
   const value = useMemo<AuthContextValue>(
     () => ({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { AdminAuthProvider } from '@/providers/AdminAuthProvider';
 import { AdminProtectedRoute } from '@/components/admin/AdminProtectedRoute';
@@ -13,13 +13,18 @@ const AdminLayoutInner = ({
   children: React.ReactNode;
 }>) => {
   const router = useRouter();
-  const { isAuthenticated } = useAdminAuthContext();
+  const pathname = usePathname();
+  const { isLoading, isAuthenticated } = useAdminAuthContext();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (pathname !== '/admin/login' && !isLoading && !isAuthenticated) {
       router.replace('/admin/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, pathname, router]);
+
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
 
   return (
     <AdminProtectedRoute

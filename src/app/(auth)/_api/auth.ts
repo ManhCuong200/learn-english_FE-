@@ -42,4 +42,3 @@ export const register = authApi.register;
 export const forgotPassword = authApi.forgotPassword;
 export const resetPassword = authApi.resetPassword;
 export const getCurrentUser = authApi.getCurrentUser;
-

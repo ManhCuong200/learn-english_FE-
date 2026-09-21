@@ -16,7 +16,7 @@ export const useAdminLogin = () => {
   return useMutation({
     mutationFn: adminLogin,
     onSuccess: (data) => {
-      queryClient.setQueryData(adminQueryKeys.all, data);
+      queryClient.setQueryData(adminQueryKeys.all, data.user);
       notifySuccess(toastManager, {
         title: 'Admin sign-in successful',
         description: 'Welcome to the content workspace.',

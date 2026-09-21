@@ -4,11 +4,11 @@ export interface AdminLoginRequest {
 }
 
 export interface AdminLoginResponse {
-  message?: string;
-  user?: {
+  user: {
     id: string;
-    name?: string;
+    name: string;
     email: string;
+    role: 'USER' | 'ADMIN';
   };
 }
 
