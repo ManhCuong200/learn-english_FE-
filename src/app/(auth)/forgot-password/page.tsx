@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useForgotPassword } from '@/app/hooks/useForgotPassword';
+import { useForgotPassword } from '@/app/(auth)/_hooks/useForgotPassword';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';

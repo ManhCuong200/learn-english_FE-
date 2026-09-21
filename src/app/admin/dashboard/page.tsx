@@ -5,13 +5,13 @@ import { AlertCircle, BookOpen, Check, LogOut, Pencil, Plus, Search, Trash2, X }
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { useAdminLogout } from '@/app/hooks/useAdminAuth';
-import { useAdminCategories, useAdminCategoryMutations, useAdminWordMutations, useAdminWords } from '@/app/hooks/useAdminData';
+import { useAdminLogout } from '@/app/admin/_hooks/useAdminAuth';
+import { useAdminCategories, useAdminCategoryMutations, useAdminWordMutations, useAdminWords } from '@/app/admin/_hooks/useAdminData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ApiError } from '@/lib/api';
-import { clearAdminSession } from '@/app/hooks/useAdminAuth';
+import { ApiError } from '@/api';
+import { clearAdminSession } from '@/app/admin/_hooks/useAdminAuth';
 import type { AdminCategory, AdminWord, CategoryInput, WordInput } from '@/types/admin';
 
 const errorMessage = (error: unknown) => {

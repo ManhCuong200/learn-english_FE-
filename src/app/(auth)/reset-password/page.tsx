@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { useResetPassword } from '@/app/hooks/useResetPassword';
+import { useResetPassword } from '@/app/(auth)/_hooks/useResetPassword';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';

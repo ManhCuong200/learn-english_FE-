@@ -1,7 +1,7 @@
 'use client';
 
-import { useAuth } from '@/app/hooks/useAuth';
-import { useLogout } from '@/app/hooks/useLogout';
+import { useAuth } from '@/app/(auth)/_hooks/useAuth';
+import { useLogout } from '@/app/(auth)/_hooks/useLogout';
 import Header from '@/components/common/Header';
 import { BookOpen, Check, ChevronRight, Flame, Headphones, LayoutDashboard, LogOut, Settings, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';

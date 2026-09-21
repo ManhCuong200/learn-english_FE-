@@ -10,7 +10,7 @@ import {
   Trophy,
 } from 'lucide-react';
 
-import { useAuth } from '@/app/hooks/useAuth';
+import { useAuth } from '@/app/(auth)/_hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
 
 const levelProgress = [

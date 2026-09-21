@@ -4,11 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRegister } from '@/app/hooks/useRegister';
-import {
-  registerSchema,
-  type RegisterFormData,
-} from '@/lib/validations/auth';
+import { useRegister } from '@/app/(auth)/_hooks/useRegister';
+import { registerSchema, type RegisterFormData, } from '@/validations/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';

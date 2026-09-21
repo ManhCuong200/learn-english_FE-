@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getCurrentUser } from '@/lib/api/auth';
+import { getCurrentUser } from '@/app/(auth)/_api/auth';
 import { authQueryKey } from '@/lib/queryKeys';
 
 export const useAuth = () => {

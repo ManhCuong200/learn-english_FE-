@@ -1,4 +1,4 @@
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch } from '@/api/client';
 import type {
   AdminCategory,
   AdminListResponse,

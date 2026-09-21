@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { useAdminLogin } from '@/app/hooks/useAdminAuth';
+import { useAdminLogin } from '@/app/admin/_hooks/useAdminAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
+import { loginSchema, type LoginFormData } from '@/validations/auth';
 
 const AdminLoginPage = () => {
   const loginMutation = useAdminLogin();

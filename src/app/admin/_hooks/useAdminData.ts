@@ -15,7 +15,7 @@ import {
   getWords,
   updateCategory,
   updateWord,
-} from '@/lib/api/admin';
+} from '@/app/admin/_api/admin';
 import { adminQueryKeys } from '@/lib/adminQueryKeys';
 
 export const useAdminCategories = () => {

@@ -22,8 +22,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { useAuth } from '@/app/hooks/useAuth';
-import { useLogout } from '@/app/hooks/useLogout';
+import { useAuth } from '@/app/(auth)/_hooks/useAuth';
+import { useLogout } from '@/app/(auth)/_hooks/useLogout';
 
 type HeaderProps = {
   variant?: 'public' | 'app';

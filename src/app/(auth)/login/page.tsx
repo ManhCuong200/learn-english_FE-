@@ -4,11 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useLogin } from '@/app/hooks/useLogin';
-import {
-  loginSchema,
-  type LoginFormData,
-} from '@/lib/validations/auth';
+import { useLogin } from '@/app/(auth)/_hooks/useLogin';
+import { loginSchema, type LoginFormData, } from '@/validations/auth';
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Label} from "@/components/ui/label";

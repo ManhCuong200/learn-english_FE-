@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { useAuth } from '@/app/hooks/useAuth';
+import { useAuth } from '@/app/(auth)/_hooks/useAuth';
 
 const MainLayout = ({
   children,
