@@ -2,15 +2,14 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { useToastManager } from '@/components/ui/toast';
-import { forgotPassword } from '@/app/(auth)/_api/auth';
 import { notifyError, notifySuccess } from '@/lib/notifications';
-import type { ForgotPasswordRequest } from '@/types/auth';
+import { authMutations } from '@/lib/mutationOptions';
 
 export const useForgotPassword = () => {
   const toastManager = useToastManager();
 
   return useMutation({
-    mutationFn: (data: ForgotPasswordRequest) => forgotPassword(data),
+    ...authMutations.forgotPassword(),
     onSuccess: ({ message }) => {
       notifySuccess(toastManager, {
         title: 'Reset link sent',

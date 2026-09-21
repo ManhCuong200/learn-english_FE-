@@ -2,15 +2,14 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { useToastManager } from '@/components/ui/toast';
-import { register } from '@/app/(auth)/_api/auth';
 import { notifyError, notifySuccess } from '@/lib/notifications';
-import type { RegisterRequest } from '@/types/auth';
+import { authMutations } from '@/lib/mutationOptions';
 
 export const useRegister = () => {
   const toastManager = useToastManager();
 
   return useMutation({
-    mutationFn: (data: RegisterRequest) => register(data),
+    ...authMutations.register(),
     onSuccess: ({ message }) => {
       notifySuccess(toastManager, {
         title: 'Account created',
