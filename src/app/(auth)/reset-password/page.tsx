@@ -73,18 +73,6 @@ const ResetPasswordForm = () => {
           </div>
         )}
 
-        {resetPasswordMutation.isSuccess && (
-          <div className="mb-5 rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-600">
-            {resetPasswordMutation.data.message}
-          </div>
-        )}
-
-        {resetPasswordMutation.isError && (
-          <div className="mb-5 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {resetPasswordMutation.error.message}
-          </div>
-        )}
-
         <form
           onSubmit={handleSubmit}
           className="space-y-5"

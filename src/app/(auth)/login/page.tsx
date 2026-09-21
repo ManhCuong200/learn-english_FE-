@@ -30,7 +30,8 @@ const LoginPage = () => {
     try {
       await loginMutation.mutateAsync(data);
       router.push('/');
-    } catch {}
+    } catch {
+    }
   };
 
   return (
@@ -46,13 +47,6 @@ const LoginPage = () => {
             Login to continue learning.
           </p>
         </div>
-
-        {/* Server error */}
-        {loginMutation.isError && (
-          <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {loginMutation.error.message}
-          </div>
-        )}
 
         {/* Form */}
         <form

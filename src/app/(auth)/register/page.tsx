@@ -52,13 +52,6 @@ const RegisterPage = () => {
           </p>
         </div>
 
-        {/* Server error */}
-        {registerMutation.isError && (
-          <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {registerMutation.error.message}
-          </div>
-        )}
-
         {/* Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}

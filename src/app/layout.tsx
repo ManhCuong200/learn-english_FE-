@@ -1,4 +1,5 @@
 import QueryProvider from '@/providers/QueryProvider';
+import { Toaster } from '@/components/ui/toast';
 import './globals.css';
 
 const RootLayout = ({
@@ -10,7 +11,9 @@ const RootLayout = ({
     <html lang="en">
       <body>
         <QueryProvider>
-          {children}
+          <Toaster>
+            {children}
+          </Toaster>
         </QueryProvider>
       </body>
     </html>

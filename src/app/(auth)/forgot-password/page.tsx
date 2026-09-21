@@ -36,18 +36,6 @@ const ForgotPasswordPage = () => {
           </p>
         </div>
 
-        {forgotPasswordMutation.isSuccess && (
-          <div className="mb-5 rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-600">
-            {forgotPasswordMutation.data.message}
-          </div>
-        )}
-
-        {forgotPasswordMutation.isError && (
-          <div className="mb-5 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {forgotPasswordMutation.error.message}
-          </div>
-        )}
-
         <form
           onSubmit={handleSubmit}
           className="space-y-5"

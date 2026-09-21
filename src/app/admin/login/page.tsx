@@ -42,12 +42,6 @@ const AdminLoginPage = () => {
           <p className="mt-4 leading-7 text-[#b9c7c4]">Manage the learning library, categories and vocabulary from one quiet workspace.</p>
         </div>
 
-        {loginMutation.isError && (
-          <div className="mt-8 rounded-lg border border-red-300/30 bg-red-300/10 px-4 py-3 text-sm text-red-100">
-            {loginMutation.error.message}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur sm:p-8">
           <div className="space-y-2">
             <Label htmlFor="admin-email" className="text-[#f7f4eb]">Admin email</Label>
