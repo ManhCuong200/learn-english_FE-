@@ -13,7 +13,6 @@ type ProtectedRouteProps = {
 export const ProtectedRoute = ({
   isLoading,
   isAuthenticated,
-  redirectTo,
   loadingText = 'Loading...',
   children,
 }: ProtectedRouteProps) => {
