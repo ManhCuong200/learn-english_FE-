@@ -97,7 +97,7 @@ export const WordForm = ({ defaultValues, onSubmit, isPending }: WordFormProps) 
             name="categoryId"
             control={control}
             render={({ field }) => (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger id="categoryId" className="h-11 rounded-xl bg-background/50 focus:ring-primary/30">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -123,7 +123,7 @@ export const WordForm = ({ defaultValues, onSubmit, isPending }: WordFormProps) 
             name="level"
             control={control}
             render={({ field }) => (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger id="level" className="h-11 rounded-xl bg-background/50 focus:ring-primary/30">
                   <SelectValue placeholder="Select a level" />
                 </SelectTrigger>

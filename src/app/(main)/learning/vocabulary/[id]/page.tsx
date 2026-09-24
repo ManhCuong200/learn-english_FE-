@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { useWord } from '../../../_hooks/useWord';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,13 +9,14 @@ import { ArrowLeft, Volume2, BookOpen, LayoutTemplate, Layers, Target, PlayCircl
 import Link from 'next/link';
 
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default function WordDetailPage({ params }: Props) {
-  const { data: word, isLoading, isError } = useWord(params.id);
+  const { id } = use(params);
+  const { data: word, isLoading, isError } = useWord(id);
 
   if (isLoading) {
     return (
