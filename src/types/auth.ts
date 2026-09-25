@@ -1,10 +1,12 @@
 export interface LoginRequest {
   email: string;
   password: string;
+  twoFactorCode?: string;
 }
 
 export interface LoginResponse {
-  user: AuthUser;
+  user?: AuthUser;
+  isTwoFactorRequired?: boolean;
 }
 
 export interface RegisterRequest {
@@ -23,6 +25,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role: 'USER' | 'ADMIN';
+  isTwoFactorEnabled?: boolean;
 }
 
 export interface ForgotPasswordRequest {

@@ -49,11 +49,36 @@ export const apiFetch = async <T>(
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(buildApiUrl(endpoint), {
+  let response = await fetch(buildApiUrl(endpoint), {
     ...options,
     credentials: 'include',
     headers,
   });
+
+  // Auto-refresh token logic
+  if (
+    response.status === 401 &&
+    !endpoint.includes('/auth/refresh') &&
+    !endpoint.includes('/auth/login')
+  ) {
+    try {
+      const refreshResponse = await fetch(buildApiUrl('/auth/refresh'), {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (refreshResponse.ok) {
+        // Retry original request
+        response = await fetch(buildApiUrl(endpoint), {
+          ...options,
+          credentials: 'include',
+          headers,
+        });
+      }
+    } catch (e) {
+      // Ignore refresh error and let the original 401 throw
+    }
+  }
 
   const contentType = response.headers.get('content-type') ?? '';
   const data: unknown = contentType.includes('application/json')

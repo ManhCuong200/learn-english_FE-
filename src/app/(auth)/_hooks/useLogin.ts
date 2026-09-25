@@ -13,8 +13,11 @@ export const useLogin = () => {
 
   return useMutation({
     ...authMutations.login(),
-    onSuccess: ({ user }) => {
-      queryClient.setQueryData<AuthUser>(authQueryKey, user);
+    onSuccess: (data) => {
+      if (data.isTwoFactorRequired) {
+        return; // Let the component handle it
+      }
+      queryClient.setQueryData<AuthUser>(authQueryKey, data.user!);
       queryClient.invalidateQueries({ queryKey: authQueryKey });
       notifySuccess(toastManager, {
         title: 'Welcome back',

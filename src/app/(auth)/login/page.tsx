@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -14,6 +15,7 @@ import { API_BASE_URL } from '@/api/client';
 const LoginPage = () => {
   const router = useRouter();
   const loginMutation = useLogin();
+  const [show2FA, setShow2FA] = useState(false);
 
   const {
     register,
@@ -24,12 +26,17 @@ const LoginPage = () => {
     defaultValues: {
       email: '',
       password: '',
+      twoFactorCode: '',
     },
   });
 
   const onSubmit = async (data: LoginFormData): Promise<void> => {
     try {
-      await loginMutation.mutateAsync(data);
+      const result = await loginMutation.mutateAsync(data) as any;
+      if (result && result.isTwoFactorRequired) {
+        setShow2FA(true);
+        return;
+      }
       router.push('/');
     } catch {
     }
@@ -54,66 +61,94 @@ const LoginPage = () => {
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-6"
         >
-          {/* Email */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="email"
-              className="text-base font-medium"
-            >
-              Email
-            </Label>
+          {!show2FA ? (
+            <>
+              {/* Email */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="email"
+                  className="text-base font-medium"
+                >
+                  Email
+                </Label>
 
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              autoComplete="email"
-              disabled={isSubmitting || loginMutation.isPending}
-              {...register('email')}
-              className="w-full rounded-lg border bg-background px-4 py-3.5 text-base outline-none transition focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  disabled={isSubmitting || loginMutation.isPending}
+                  {...register('email')}
+                  className="w-full rounded-lg border bg-background px-4 py-3.5 text-base outline-none transition focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
 
-            {errors.email && (
-              <p className="text-sm text-destructive">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
+                {errors.email && (
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-          {/* Password */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="password"
+              {/* Password */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="password"
+                    className="text-base font-medium"
+                  >
+                    Password
+                  </label>
+
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-muted-foreground transition hover:text-foreground hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  disabled={isSubmitting || loginMutation.isPending}
+                  {...register('password')}
+                  className="w-full rounded-lg border bg-background px-4 py-3.5 text-base outline-none transition focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
+
+                {errors.password && (
+                  <p className="text-sm text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <Label
+                htmlFor="twoFactorCode"
                 className="text-base font-medium"
               >
-                Password
-              </label>
-
-              <Link
-                href="/forgot-password"
-                className="text-sm text-muted-foreground transition hover:text-foreground hover:underline"
-              >
-                Forgot password?
-              </Link>
+                Authentication Code
+              </Label>
+              <Input
+                id="twoFactorCode"
+                type="text"
+                placeholder="000000"
+                maxLength={6}
+                autoComplete="one-time-code"
+                disabled={isSubmitting || loginMutation.isPending}
+                {...register('twoFactorCode')}
+                className="w-full rounded-lg border bg-background px-4 py-3.5 text-base outline-none transition focus:ring-2 focus:ring-ring"
+              />
+              {errors.twoFactorCode && (
+                <p className="text-sm text-destructive">
+                  {errors.twoFactorCode.message}
+                </p>
+              )}
             </div>
-
-            <input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              disabled={isSubmitting || loginMutation.isPending}
-              {...register('password')}
-              className="w-full rounded-lg border bg-background px-4 py-3.5 text-base outline-none transition focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            />
-
-            {errors.password && (
-              <p className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+          )}
 
           {/* Submit */}
           <Button
@@ -123,7 +158,7 @@ const LoginPage = () => {
           >
             {isSubmitting || loginMutation.isPending
               ? 'Logging in...'
-              : 'Login'}
+              : show2FA ? 'Verify Code' : 'Login'}
           </Button>
         </form>
 

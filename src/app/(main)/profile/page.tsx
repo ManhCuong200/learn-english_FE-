@@ -12,6 +12,7 @@ import {
 
 import { useAuth } from '@/app/(auth)/_hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
+import { SecuritySettings } from '../_components/SecuritySettings';
 
 const levelProgress = [
   { level: 'Beginner', score: 0, words: 0, exercises: 0 },
@@ -167,6 +168,10 @@ const ProfileEditor = ({ user }: { user: AuthUser }) => {
               ))}
             </div>
           </section>
+        </div>
+
+        <div className="mt-8">
+          <SecuritySettings />
         </div>
       </div>
     </main>

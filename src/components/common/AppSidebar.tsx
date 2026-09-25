@@ -30,7 +30,7 @@ const AppSidebar = ({ brand, items, activeHref, onSignOut, isSigningOut }: AppSi
       <nav className="mt-14 space-y-1 text-sm">
         {items.map(({ label, href, icon: Icon }) => (
           <Link
-            key={href}
+            key={label}
             href={href}
             className={`flex items-center gap-3 rounded-lg px-3 py-3 transition ${
               activeHref === href
