@@ -32,7 +32,11 @@ const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormData): Promise<void> => {
     try {
-      const result = await loginMutation.mutateAsync(data) as { isTwoFactorRequired?: boolean };
+      const payload = { ...data };
+      if (!payload.twoFactorCode) {
+        delete payload.twoFactorCode;
+      }
+      const result = await loginMutation.mutateAsync(payload) as { isTwoFactorRequired?: boolean };
       if (result && result.isTwoFactorRequired) {
         setShow2FA(true);
         return;
