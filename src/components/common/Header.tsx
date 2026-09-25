@@ -7,6 +7,7 @@ import {
   Pencil,
   Trophy,
   LayoutDashboard,
+  Menu,
 } from 'lucide-react';
 import {
   Avatar,
@@ -69,23 +70,85 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
             </a>
           </nav>
         ) : (
-          <nav className="hidden items-center gap-8 text-sm font-medium text-foreground md:flex">
-            <Link href="/learning" className="transition hover:text-primary">
-              My learning
-            </Link>
-            <Link href="/learning/vocabulary" className="transition hover:text-primary">
-              Vocabulary
-            </Link>
-            <Link href="/learning/flashcards" className="transition hover:text-primary">
-              Flashcards
-            </Link>
-            <Link href="/learning/history" className="transition hover:text-primary">
-              History
-            </Link>
-          </nav>
+          <>
+            <nav className="hidden items-center gap-8 text-sm font-medium text-foreground md:flex">
+              <Link href="/learning" className="transition hover:text-primary">
+                My learning
+              </Link>
+              <Link href="/learning/vocabulary" className="transition hover:text-primary">
+                Vocabulary
+              </Link>
+              <Link href="/learning/flashcards" className="transition hover:text-primary">
+                Flashcards
+              </Link>
+              <Link href="/learning/history" className="transition hover:text-primary">
+                History
+              </Link>
+            </nav>
+            <div className="flex md:hidden items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      className="p-2 text-foreground focus:outline-none"
+                    >
+                      <Menu className="size-6" />
+                    </button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="w-56 mt-2">
+                  <DropdownMenuItem render={<Link href="/learning" />}>
+                    My learning
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/learning/vocabulary" />}>
+                    Vocabulary
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/learning/flashcards" />}>
+                    Flashcards
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/learning/history" />}>
+                    History
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </>
         )}
 
-        {user ? (
+        <div className="flex items-center gap-4">
+          {!isPublic && (
+            <div className="flex md:hidden items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      className="p-2 text-foreground focus:outline-none"
+                    >
+                      <Menu className="size-6" />
+                    </button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="w-56 mt-2">
+                  <DropdownMenuItem render={<Link href="/learning" />}>
+                    My learning
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/learning/vocabulary" />}>
+                    Vocabulary
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/learning/flashcards" />}>
+                    Flashcards
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/learning/history" />}>
+                    History
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+
+          {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -206,6 +269,7 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
             </Link>
           </div>
         ) : null}
+        </div>
       </div>
     </header>
   );

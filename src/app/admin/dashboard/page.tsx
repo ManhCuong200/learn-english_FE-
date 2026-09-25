@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, BookOpen, Check, LayoutDashboard, LogOut, X, ExternalLink } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { useAdminLogout } from '@/app/admin/_hooks/useAdminAuth';
 import { useAdminCategories, useAdminCategoryMutations, useAdminWordMutations, useAdminWords } from '@/app/admin/_hooks/useAdminData';
@@ -136,10 +137,15 @@ const AdminDashboardPage = () => {
             <span className="grid size-9 place-items-center rounded-full bg-[#f5c66f] text-lg text-[#203238]">e</span>
             Eunoia Admin
           </div>
-          <Button variant="ghost" onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending} className="gap-2 text-[#dce8e3] hover:bg-white/10 hover:text-white">
-            <LogOut className="size-4" />
-            {logoutMutation.isPending ? 'Signing out...' : 'Sign out'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link href="/learning" className="rounded-md px-3 py-2 text-sm font-medium text-[#dce8e3] hover:bg-white/10 hover:text-white transition-colors">
+              App
+            </Link>
+            <Button variant="ghost" size="sm" onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending} className="gap-2 text-[#dce8e3] hover:bg-white/10 hover:text-white">
+              <LogOut className="size-4" />
+              <span className="hidden sm:inline">{logoutMutation.isPending ? 'Signing out...' : 'Sign out'}</span>
+            </Button>
+          </div>
         </div>
       </header>
 
