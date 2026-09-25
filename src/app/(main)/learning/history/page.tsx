@@ -26,39 +26,23 @@ export default function LearningHistoryPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-12">
-      <div className="relative overflow-hidden bg-background pt-16 md:pt-24 pb-12 border-b">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-        <div className="absolute top-0 -translate-y-12 translate-x-1/3 right-0 h-[300px] w-[300px] rounded-full bg-primary/10 blur-[100px]"></div>
-        
-        <div className="relative mx-auto max-w-5xl px-6 sm:px-10 lg:px-12">
-          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Your journey
-          </div>
-          <div className="flex items-center gap-4 mb-4 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-            <span className="grid size-14 place-items-center rounded-2xl bg-[#e3eee7] text-primary">
-              <History className="size-7" />
-            </span>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-              Learning History
-            </h1>
-          </div>
-          <p className="max-w-2xl text-lg text-muted-foreground animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150">
-            Track your learning activities and progress. See what you've accomplished and where you're heading.
-          </p>
-        </div>
+    <div className="min-h-screen bg-background pb-20">
+      <div className="mx-auto max-w-5xl px-6 pt-12 pb-8">
+        <p className="text-xs font-bold tracking-[0.2em] text-primary uppercase mb-2">Your Journey</p>
+        <h1 className="font-display text-4xl sm:text-5xl font-extrabold text-foreground">
+          Learning History
+        </h1>
       </div>
 
-      <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-12 py-10">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
         <div className="mb-8">
-          <h2 className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-4">
+          <h2 className="text-sm font-bold tracking-wider text-muted-foreground uppercase mb-4">
             Filter activities
           </h2>
           <LearningHistoryFilters />
         </div>
 
-        <div className="mt-8 animate-in fade-in duration-1000 delay-300">
+        <div className="mt-8 animate-in fade-in duration-1000 delay-150">
           <LearningHistoryList 
             data={data}
             isLoading={isLoading}

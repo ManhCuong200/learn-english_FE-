@@ -91,7 +91,7 @@ export default function WordDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
+    <div className="min-h-screen bg-slate-50/50 pb-20">
       <div className="mx-auto max-w-4xl p-4 md:p-8 space-y-6">
         <div>
           <Button variant="ghost" className="rounded-full hover:bg-primary/5 hover:text-primary transition-colors" onClick={() => window.location.href = '/learning/vocabulary'}>
@@ -100,7 +100,7 @@ export default function WordDetailPage({ params }: Props) {
           </Button>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border bg-card shadow-xl shadow-black/5 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="overflow-hidden rounded-[2rem] border border-border/50 bg-white shadow-sm animate-in fade-in slide-in-from-bottom-8 duration-700">
           {/* Header Section */}
           <div className="relative p-8 md:p-16 border-b bg-gradient-to-br from-background via-background to-primary/5">
             <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 h-64 w-64 rounded-full bg-primary/10 blur-[80px]"></div>

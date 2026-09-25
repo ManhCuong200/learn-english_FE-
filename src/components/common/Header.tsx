@@ -76,6 +76,9 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
             <Link href="/learning/vocabulary" className="transition hover:text-primary">
               Vocabulary
             </Link>
+            <Link href="/learning/flashcards" className="transition hover:text-primary">
+              Flashcards
+            </Link>
             <Link href="/learning/history" className="transition hover:text-primary">
               History
             </Link>
