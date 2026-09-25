@@ -22,7 +22,6 @@ export interface AdminWord {
   id: string;
   word: string;
   meaning?: string | null;
-  example?: string | null;
   categoryId?: string | null;
   category?: { id: string; name: string } | null;
 }
@@ -35,7 +34,6 @@ export interface CategoryInput {
 export interface WordInput {
   word: string;
   meaning: string;
-  example?: string;
   categoryId?: string;
 }
 

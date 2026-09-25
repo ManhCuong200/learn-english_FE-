@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import { useAuth } from '@/app/(auth)/_hooks/useAuth';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import Header from '@/components/common/Header';
 
 const MainLayout = ({
   children,
@@ -27,7 +28,12 @@ const MainLayout = ({
       redirectTo="/login"
       loadingText="Loading your library..."
     >
-      {children}
+      <div className="flex min-h-screen flex-col">
+        <Header variant="app" />
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
     </ProtectedRoute>
   );
 };

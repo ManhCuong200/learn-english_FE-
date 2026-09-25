@@ -6,6 +6,7 @@ import {
   BookOpenCheck,
   Pencil,
   Trophy,
+  LayoutDashboard,
 } from 'lucide-react';
 import {
   Avatar,
@@ -55,7 +56,7 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
           Eunoia
         </Link>
 
-        {isPublic && (
+        {isPublic ? (
           <nav className="hidden items-center gap-8 text-sm font-medium text-[#536266] md:flex">
             <a href="#method" className="transition hover:text-[#1e3036]">
               How it works
@@ -66,6 +67,18 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
             <a href="#review" className="transition hover:text-[#1e3036]">
               The method
             </a>
+          </nav>
+        ) : (
+          <nav className="hidden items-center gap-8 text-sm font-medium text-foreground md:flex">
+            <Link href="/learning" className="transition hover:text-primary">
+              My learning
+            </Link>
+            <Link href="/learning/vocabulary" className="transition hover:text-primary">
+              Vocabulary
+            </Link>
+            <Link href="/learning/history" className="transition hover:text-primary">
+              History
+            </Link>
           </nav>
         )}
 
@@ -149,6 +162,11 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
 
               <DropdownMenuSeparator />
 
+              <DropdownMenuItem render={<Link href="/learning" />}>
+                <LayoutDashboard className="size-4" />
+                Learning App
+              </DropdownMenuItem>
+              
               <DropdownMenuItem render={<Link href="/profile" />}>
                 <Pencil className="size-4" />
                 Edit profile

@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Word } from '@/types/word';
 import { EditWordDialog } from './EditWordDialog';
 import { DeleteWordDialog } from './DeleteWordDialog';
+import Link from 'next/link';
 
 type WordListProps = {
   words?: Word[];
@@ -74,9 +75,12 @@ export const WordList = ({ words, isLoading }: WordListProps) => {
             <TableRow key={word.id} className="group transition-colors hover:bg-muted/40">
               <TableCell>
                 <div className="flex flex-col gap-1">
-                  <span className="font-bold text-base text-foreground group-hover:text-primary transition-colors">
+                  <Link 
+                    href={`/admin/words/${word.id}`}
+                    className="font-bold text-base text-foreground group-hover:text-primary transition-colors hover:underline"
+                  >
                     {word.word}
-                  </span>
+                  </Link>
                   {word.pronunciation && (
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
                       <Volume2 className="h-3 w-3 opacity-50" />

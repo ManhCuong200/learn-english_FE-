@@ -1,12 +1,17 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import { useWord } from '../../../_hooks/useWord';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Volume2, BookOpen, LayoutTemplate, Layers, Target, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Volume2, BookOpen, LayoutTemplate, Layers, Target, PlayCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { ExampleList } from '../../../_components/ExampleList';
+
+import { useExamples } from '../../../_hooks/useExamples';
+import { useRecordLearningHistory } from '../../../_hooks/useLearningHistory';
+import { toast } from 'sonner';
 
 type Props = {
   params: Promise<{
@@ -16,7 +21,32 @@ type Props = {
 
 export default function WordDetailPage({ params }: Props) {
   const { id } = use(params);
-  const { data: word, isLoading, isError } = useWord(id);
+  const { data: word, isLoading: isWordLoading, isError } = useWord(id);
+  const { data: examplesData, isLoading: isExamplesLoading } = useExamples(id);
+  const recordHistory = useRecordLearningHistory();
+  const [isMarked, setIsMarked] = useState(false);
+
+  const examples = examplesData || word?.examples || [];
+
+  const handleMarkAsLearned = () => {
+    if (!word) return;
+    
+    recordHistory.mutate({
+      type: 'VOCABULARY',
+      title: `Learned vocabulary: ${word.word}`,
+      description: word.meaning,
+      referenceId: word.id,
+    }, {
+      onSuccess: () => {
+        setIsMarked(true);
+        toast.success(`You've learned the word "${word.word}"!`);
+      },
+      onError: () => {
+        toast.error('Failed to save learning history.');
+      }
+    });
+  };
+  const isLoading = isWordLoading;
 
   if (isLoading) {
     return (
@@ -74,13 +104,13 @@ export default function WordDetailPage({ params }: Props) {
           {/* Header Section */}
           <div className="relative p-8 md:p-16 border-b bg-gradient-to-br from-background via-background to-primary/5">
             <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 h-64 w-64 rounded-full bg-primary/10 blur-[80px]"></div>
-            
+
             <div className="relative z-10 flex flex-col gap-8">
               <div className="flex flex-col gap-4">
                 <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">
                   {word.word}
                 </h1>
-                
+
                 {word.pronunciation && (
                   <div className="flex items-center gap-3">
                     <button className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform hover:scale-110 hover:bg-primary/20 active:scale-95">
@@ -107,6 +137,30 @@ export default function WordDetailPage({ params }: Props) {
                   </Badge>
                 )}
               </div>
+
+              <div className="pt-2">
+                <Button 
+                  onClick={handleMarkAsLearned} 
+                  disabled={recordHistory.isPending || isMarked}
+                  className={`rounded-full px-6 font-semibold shadow-md transition-all ${
+                    isMarked 
+                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20' 
+                      : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20'
+                  }`}
+                >
+                  {isMarked ? (
+                    <>
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Learned
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Mark as Learned
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -128,41 +182,15 @@ export default function WordDetailPage({ params }: Props) {
             </div>
 
             {/* Examples Card */}
-            {word.examples && word.examples.length > 0 && (
-              <div className="space-y-6">
-                <h3 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
-                    <LayoutTemplate className="h-5 w-5" />
-                  </div>
-                  Examples
-                </h3>
-                <div className="grid gap-4">
-                  {word.examples.map((example, index) => (
-                    <div 
-                      key={example.id} 
-                      className="group relative overflow-hidden rounded-2xl border bg-card p-6 md:p-8 transition-all hover:border-emerald-500/30 hover:shadow-md"
-                    >
-                      <div className="absolute top-6 right-6 opacity-0 transition-opacity group-hover:opacity-100">
-                        <PlayCircle className="h-6 w-6 text-emerald-500/40" />
-                      </div>
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
-                          {index + 1}
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-lg md:text-xl font-medium text-foreground leading-relaxed">
-                            "{example.sentence}"
-                          </p>
-                          <p className="text-base md:text-lg text-muted-foreground">
-                            {example.translation}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+            <div className="space-y-6">
+              <h3 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                  <LayoutTemplate className="h-5 w-5" />
                 </div>
-              </div>
-            )}
+                Examples
+              </h3>
+              <ExampleList examples={examples} isLoading={isExamplesLoading && !word?.examples} />
+            </div>
           </div>
         </div>
       </div>

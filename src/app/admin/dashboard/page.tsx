@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, BookOpen, Check, LayoutDashboard, LogOut, X } from 'lucide-react';
+import { AlertCircle, BookOpen, Check, LayoutDashboard, LogOut, X, ExternalLink } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
@@ -124,7 +124,7 @@ const AdminDashboardPage = () => {
         activeHref="/admin/dashboard"
         items={[
           { label: 'Content dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-          { label: 'Learning app', href: '/learning', icon: BookOpen },
+          { label: 'View Learner App', href: '/learning', icon: ExternalLink },
         ]}
         onSignOut={() => logoutMutation.mutate()}
         isSigningOut={logoutMutation.isPending}

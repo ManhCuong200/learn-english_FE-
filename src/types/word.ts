@@ -1,13 +1,5 @@
 import { Category } from './category';
-
-export type Example = {
-  id: string;
-  wordId: string;
-  sentence: string;
-  translation: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import { Example } from './example';
 
 export type Word = {
   id: string;
