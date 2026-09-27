@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShieldAlert, ArrowLeft, Lock, AlertTriangle, Terminal } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, AlertTriangle, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface UnauthorizedWarningProps {
-  onShowLogin?: () => void;
-}
-
-export const UnauthorizedWarning = ({ onShowLogin }: UnauthorizedWarningProps) => {
+export const UnauthorizedWarning = () => {
   const [clientIp, setClientIp] = useState<string>('127.0.0.1');
   const [currentTime, setCurrentTime] = useState<string>('');
 
@@ -81,23 +77,13 @@ export const UnauthorizedWarning = ({ onShowLogin }: UnauthorizedWarningProps) =
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/" className="w-full sm:w-auto">
-            <Button className="h-11 w-full sm:w-auto px-6 bg-red-600 font-bold text-white hover:bg-red-700 shadow-lg shadow-red-900/50 border border-red-500/50 cursor-pointer">
+        {/* Action Button */}
+        <div className="mt-8 flex items-center justify-center">
+          <Link href="/">
+            <Button className="h-11 px-6 bg-red-600 font-bold text-white hover:bg-red-700 shadow-lg shadow-red-900/50 border border-red-500/50 cursor-pointer">
               <ArrowLeft className="mr-2 size-4" /> Quay về trang chủ
             </Button>
           </Link>
-
-          {onShowLogin && (
-            <Button
-              variant="outline"
-              onClick={onShowLogin}
-              className="h-11 w-full sm:w-auto px-6 border-red-900/60 bg-red-950/40 text-red-300 hover:bg-red-900/60 hover:text-white cursor-pointer"
-            >
-              <Lock className="mr-2 size-4 text-red-400" /> Xác minh Developer
-            </Button>
-          )}
         </div>
       </div>
     </main>
