@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { AdminCategory, AdminWord, CategoryInput, WordInput } from '@/types/admin';
+import { fetchWordInfo } from '../_api/words';
 
 const toSlug = (value: string) => {
   return value
@@ -108,6 +109,25 @@ const WordForm = ({ word, categories, isPending, onCancel, onSubmit }: WordFormP
     pronunciation: word?.pronunciation ?? word?.ipa ?? '',
     categoryId: word?.categoryId ?? word?.category?.id ?? '',
   });
+  const [isAutoFetching, setIsAutoFetching] = useState(false);
+
+  const handleAutoFetch = async () => {
+    if (!value.word.trim()) return;
+    setIsAutoFetching(true);
+    try {
+      const data = await fetchWordInfo(value.word.trim());
+      setValue((prev) => ({
+        ...prev,
+        meaning: data.meaning || prev.meaning,
+        ipa: data.ipa || prev.ipa,
+        pronunciation: data.ipa || prev.pronunciation,
+      }));
+    } catch {
+      // Ignore
+    } finally {
+      setIsAutoFetching(false);
+    }
+  };
 
   return (
     <form
@@ -128,23 +148,36 @@ const WordForm = ({ word, categories, isPending, onCancel, onSubmit }: WordFormP
       }}
       className="rounded-2xl border border-[#dfe4dc] bg-white p-6 sm:p-8"
     >
-      <div className="flex items-center gap-3">
-        <span className="grid size-10 place-items-center rounded-xl bg-[#d9eee4] text-[#286052]">
-          <Plus className="size-5" />
-        </span>
-        <div>
-          <h2 className="font-semibold">{word ? 'Edit word' : 'Create word'}</h2>
-          <p className="text-sm text-[#657477]">{word ? 'Update word details in the library.' : 'Add a new word to the library.'}</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-xl bg-[#d9eee4] text-[#286052]">
+            <Plus className="size-5" />
+          </span>
+          <div>
+            <h2 className="font-semibold">{word ? 'Edit word' : 'Create word'}</h2>
+            <p className="text-sm text-[#657477]">{word ? 'Update word details in the library.' : 'Add a new word to the library.'}</p>
+          </div>
         </div>
       </div>
       <div className="mt-7 space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="word-value">Word</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="word-value">Word</Label>
+            <button
+              type="button"
+              disabled={isAutoFetching || !value.word.trim()}
+              onClick={handleAutoFetch}
+              className="flex items-center gap-1.5 text-xs font-bold text-[#286052] hover:underline disabled:opacity-40"
+            >
+              {isAutoFetching ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3 text-amber-500" />}
+              {isAutoFetching ? 'Đang tra...' : '✨ Tra từ tự động'}
+            </button>
+          </div>
           <Input
             id="word-value"
             value={value.word}
             onChange={(event) => setValue({ ...value, word: event.target.value })}
-            placeholder="e.g. hello"
+            placeholder="e.g. resilient"
             required
           />
         </div>

@@ -46,3 +46,26 @@ export const deleteWord = async (id: string): Promise<void> => {
     method: 'DELETE',
   });
 };
+
+export const fetchWordInfo = async (word: string) => {
+  return apiFetch<{
+    word: string;
+    meaning: string;
+    ipa: string | null;
+    level: string;
+    examples: { content: string; meaning: string | null }[];
+  }>(`/words/fetch-info?word=${encodeURIComponent(word)}`);
+};
+
+export const bulkCrawlWords = async (data: { words: string[]; categoryId: string }) => {
+  return apiFetch<{
+    message: string;
+    successCount: number;
+    failedCount: number;
+    total: number;
+    words: Word[];
+  }>('/words/bulk-crawl', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};

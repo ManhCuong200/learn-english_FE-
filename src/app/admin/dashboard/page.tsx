@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, BookOpen, Check, LayoutDashboard, LogOut, X, ExternalLink } from 'lucide-react';
+import { AlertCircle, BookOpen, Check, LayoutDashboard, LogOut, X, ExternalLink, DownloadCloud, Sparkles } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ import { clearAdminSession } from '@/app/admin/_hooks/useAdminAuth';
 import type { AdminCategory, AdminWord, CategoryInput, WordInput } from '@/types/admin';
 import { CategoryForm, WordForm } from '@/app/admin/_components/AdminForms';
 import { CategoryPanel, WordPanel } from '@/app/admin/_components/AdminDataPanels';
+import { BulkCrawlModal } from '@/app/admin/_components/BulkCrawlModal';
 
 const errorMessage = (error: unknown) => {
   return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
@@ -36,6 +37,7 @@ const AdminDashboardPage = () => {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
   const [editingWord, setEditingWord] = useState<AdminWord | null>(null);
+  const [isBulkCrawlOpen, setIsBulkCrawlOpen] = useState(false);
   const categoryMutations = useAdminCategoryMutations();
   const wordMutations = useAdminWordMutations();
 
@@ -169,12 +171,21 @@ const AdminDashboardPage = () => {
           </div>
         )}
 
-        <div className="mt-8 flex gap-2 border-b border-[#dfe4dc]">
-          {(['categories', 'words'] as const).map((tab) => (
-            <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={`border-b-2 px-4 py-3 text-sm font-semibold capitalize transition ${activeTab === tab ? 'border-[#c56b4e] text-[#c56b4e]' : 'border-transparent text-[#657477] hover:text-[#203238]'}`}>
-              {tab}
-            </button>
-          ))}
+        <div className="mt-8 flex items-center justify-between border-b border-[#dfe4dc]">
+          <div className="flex gap-2">
+            {(['categories', 'words'] as const).map((tab) => (
+              <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={`border-b-2 px-4 py-3 text-sm font-semibold capitalize transition ${activeTab === tab ? 'border-[#c56b4e] text-[#c56b4e]' : 'border-transparent text-[#657477] hover:text-[#203238]'}`}>
+                {tab}
+              </button>
+            ))}
+          </div>
+          <Button
+            onClick={() => setIsBulkCrawlOpen(true)}
+            className="mb-2 bg-[#286052] hover:bg-[#1d473d] text-white font-bold gap-2 text-xs h-9 shadow-sm"
+          >
+            <DownloadCloud className="size-4" />
+            🚀 Cào từ vựng hàng loạt
+          </Button>
         </div>
 
         {isLoading && <div className="mt-8 rounded-xl border border-[#dfe4dc] bg-white p-8 text-sm text-[#657477]">Loading admin data...</div>}
@@ -195,6 +206,16 @@ const AdminDashboardPage = () => {
         )}
       </div>
       </div>
+
+      <BulkCrawlModal
+        isOpen={isBulkCrawlOpen}
+        onClose={() => setIsBulkCrawlOpen(false)}
+        categories={categories}
+        onSuccess={() => {
+          wordsQuery.refetch();
+          categoriesQuery.refetch();
+        }}
+      />
     </main>
   );
 }
