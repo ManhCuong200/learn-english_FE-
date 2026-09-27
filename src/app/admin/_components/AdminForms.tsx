@@ -42,9 +42,98 @@ type WordFormProps = {
 };
 
 const WordForm = ({ word, categories, isPending, onCancel, onSubmit }: WordFormProps) => {
-  const [value, setValue] = useState<WordInput>({ word: word?.word ?? '', meaning: word?.meaning ?? '', categoryId: word?.categoryId ?? word?.category?.id ?? '' });
+  const [value, setValue] = useState<WordInput>({
+    word: word?.word ?? '',
+    meaning: word?.meaning ?? '',
+    ipa: word?.ipa ?? word?.pronunciation ?? '',
+    pronunciation: word?.pronunciation ?? word?.ipa ?? '',
+    categoryId: word?.categoryId ?? word?.category?.id ?? '',
+  });
 
-  return <form onSubmit={async (event) => { event.preventDefault(); await onSubmit({ ...value, word: value.word.trim(), meaning: value.meaning.trim(), categoryId: value.categoryId || undefined }); }} className="rounded-2xl border border-[#dfe4dc] bg-white p-6 sm:p-8"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-[#d9eee4] text-[#286052]"><Plus className="size-5" /></span><div><h2 className="font-semibold">{word ? 'Edit word' : 'New word'}</h2><p className="text-sm text-[#657477]">Add useful language to the library.</p></div></div><div className="mt-7 space-y-5"><div className="space-y-2"><Label htmlFor="word-value">Word</Label><Input id="word-value" value={value.word} onChange={(event) => setValue({ ...value, word: event.target.value })} required /></div><div className="space-y-2"><Label htmlFor="word-meaning">Meaning</Label><Input id="word-meaning" value={value.meaning} onChange={(event) => setValue({ ...value, meaning: event.target.value })} required /></div><div className="space-y-2"><Label htmlFor="word-category">Category</Label><select id="word-category" value={value.categoryId} onChange={(event) => setValue({ ...value, categoryId: event.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"><option value="">No category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div><div className="flex gap-2"><Button type="submit" disabled={isPending}>{isPending ? 'Saving...' : word ? 'Update word' : 'Create word'}</Button>{word && <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>}</div></div></form>;
+  return (
+    <form
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const ipaVal = value.ipa?.trim() || value.pronunciation?.trim();
+        await onSubmit({
+          ...value,
+          word: value.word.trim(),
+          meaning: value.meaning.trim(),
+          ipa: ipaVal,
+          pronunciation: ipaVal,
+          categoryId: value.categoryId || undefined,
+        });
+      }}
+      className="rounded-2xl border border-[#dfe4dc] bg-white p-6 sm:p-8"
+    >
+      <div className="flex items-center gap-3">
+        <span className="grid size-10 place-items-center rounded-xl bg-[#d9eee4] text-[#286052]">
+          <Plus className="size-5" />
+        </span>
+        <div>
+          <h2 className="font-semibold">{word ? 'Edit word' : 'New word'}</h2>
+          <p className="text-sm text-[#657477]">Add useful language to the library.</p>
+        </div>
+      </div>
+      <div className="mt-7 space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="word-value">Word</Label>
+          <Input
+            id="word-value"
+            value={value.word}
+            onChange={(event) => setValue({ ...value, word: event.target.value })}
+            placeholder="e.g. hello"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="word-meaning">Meaning</Label>
+          <Input
+            id="word-meaning"
+            value={value.meaning}
+            onChange={(event) => setValue({ ...value, meaning: event.target.value })}
+            placeholder="e.g. xin chào"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="word-ipa">IPA (Phiên âm)</Label>
+          <Input
+            id="word-ipa"
+            value={value.ipa}
+            onChange={(event) => setValue({ ...value, ipa: event.target.value, pronunciation: event.target.value })}
+            placeholder="e.g. /həˈloʊ/"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="word-category">Category</Label>
+          <select
+            id="word-category"
+            value={value.categoryId}
+            onChange={(event) => setValue({ ...value, categoryId: event.target.value })}
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">No category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex gap-2">
+          <Button type="submit" disabled={isPending}>
+            {isPending ? 'Saving...' : word ? 'Update word' : 'Create word'}
+          </Button>
+          {word && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+        </div>
+      </div>
+    </form>
+  );
 };
 
 export { CategoryForm, WordForm };

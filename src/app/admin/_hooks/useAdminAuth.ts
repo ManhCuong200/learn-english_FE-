@@ -16,7 +16,7 @@ export const useAdminLogin = () => {
   return useMutation({
     mutationFn: adminLogin,
     onSuccess: (data) => {
-      queryClient.setQueryData(adminQueryKeys.all, data.user);
+      queryClient.setQueryData(adminQueryKeys.auth, data.user);
       notifySuccess(toastManager, {
         title: 'Admin sign-in successful',
         description: 'Welcome to the content workspace.',
@@ -37,6 +37,7 @@ export const useAdminLogout = () => {
   return useMutation({
     mutationFn: adminLogout,
     onSuccess: () => {
+      queryClient.removeQueries({ queryKey: adminQueryKeys.auth });
       queryClient.removeQueries({ queryKey: adminQueryKeys.all });
       notifySuccess(toastManager, {
         title: 'Signed out',
@@ -51,5 +52,6 @@ export const useAdminLogout = () => {
 };
 
 export const clearAdminSession = (queryClient: ReturnType<typeof useQueryClient>) => {
+  queryClient.removeQueries({ queryKey: adminQueryKeys.auth });
   queryClient.removeQueries({ queryKey: adminQueryKeys.all });
 };

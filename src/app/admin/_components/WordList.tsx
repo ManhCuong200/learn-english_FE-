@@ -81,10 +81,10 @@ export const WordList = ({ words, isLoading }: WordListProps) => {
                   >
                     {word.word}
                   </Link>
-                  {word.pronunciation && (
+                  {(word.ipa || word.pronunciation) && (
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
                       <Volume2 className="h-3 w-3 opacity-50" />
-                      {word.pronunciation}
+                      {word.ipa || word.pronunciation}
                     </div>
                   )}
                 </div>

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createWord } from '../_api/words';
+import { adminQueryKeys } from '@/lib/adminQueryKeys';
 import { toast } from 'sonner';
 
 export const useCreateWord = () => {
@@ -9,6 +10,7 @@ export const useCreateWord = () => {
     mutationFn: createWord,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['words'] });
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
       toast.success('Word created successfully.');
     },
     onError: (error) => {

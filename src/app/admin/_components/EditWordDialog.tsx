@@ -46,7 +46,8 @@ export const EditWordDialog = ({ word, children }: EditWordDialogProps) => {
           defaultValues={{
             word: word.word,
             meaning: word.meaning,
-            pronunciation: word.pronunciation || '',
+            ipa: word.ipa || word.pronunciation || '',
+            pronunciation: word.pronunciation || word.ipa || '',
             level: word.level || '',
             categoryId: word.categoryId,
           }}

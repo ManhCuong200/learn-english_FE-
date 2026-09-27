@@ -21,7 +21,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
   const isLoginPage = pathname === '/admin/login';
   const query = useQuery<AuthUser>({
-    queryKey: adminQueryKeys.all,
+    queryKey: adminQueryKeys.auth,
     queryFn: getCurrentUser,
     retry: false,
     enabled: !isLoginPage,
@@ -33,6 +33,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       isLoading: !isLoginPage && query.isLoading,
       isAuthenticated,
       clearSession: () => {
+        queryClient.removeQueries({ queryKey: adminQueryKeys.auth });
         queryClient.removeQueries({ queryKey: adminQueryKeys.all });
       },
     }),

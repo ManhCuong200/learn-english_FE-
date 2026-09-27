@@ -6,6 +6,7 @@ export type Word = {
   word: string;
   meaning: string;
   pronunciation: string | null;
+  ipa?: string | null;
   level: string | null;
   categoryId: string;
   category?: Category;
@@ -24,6 +25,7 @@ export type CreateWordRequest = {
   word: string;
   meaning: string;
   pronunciation?: string;
+  ipa?: string;
   level?: string;
   categoryId: string;
 };

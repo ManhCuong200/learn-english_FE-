@@ -34,9 +34,44 @@ type WordPanelProps = {
 
 const WordPanel = ({ words, searchInput, onSearchInputChange, onSearch, onEdit, onDelete }: WordPanelProps) => (
   <section className="rounded-2xl border border-[#dfe4dc] bg-white p-6 sm:p-8">
-    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="font-semibold">Words</h2><p className="mt-1 text-sm text-[#657477]">Search and maintain the vocabulary bank.</p></div><form onSubmit={(event) => { event.preventDefault(); onSearch(); }} className="flex gap-2"><Input value={searchInput} onChange={(event) => onSearchInputChange(event.target.value)} placeholder="Search words" className="h-9 w-44" /><Button type="submit" size="icon" aria-label="Search words"><Search className="size-4" /></Button></form></div>
+    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div>
+        <h2 className="font-semibold">Words</h2>
+        <p className="mt-1 text-sm text-[#657477]">Search and maintain the vocabulary bank.</p>
+      </div>
+      <form onSubmit={(event) => { event.preventDefault(); onSearch(); }} className="flex gap-2">
+        <Input value={searchInput} onChange={(event) => onSearchInputChange(event.target.value)} placeholder="Search words" className="h-9 w-44" />
+        <Button type="submit" size="icon" aria-label="Search words"><Search className="size-4" /></Button>
+      </form>
+    </div>
     <div className="mt-6 space-y-3">
-      {words.map((word) => <div key={word.id} className="flex items-center justify-between gap-4 rounded-xl border border-[#e6e9e4] p-4"><div className="min-w-0"><Link href={`/admin/words/${word.id}`} className="font-semibold hover:text-[#c56b4e] hover:underline transition-colors">{word.word}</Link><p className="mt-1 truncate text-sm text-[#657477]">{word.meaning || 'No meaning yet.'}{word.category?.name ? ` · ${word.category.name}` : ''}</p></div><div className="flex shrink-0 gap-1"><Button variant="ghost" size="icon" onClick={() => onEdit(word)} aria-label={`Edit ${word.word}`}><Pencil className="size-4" /></Button><Button variant="ghost" size="icon" onClick={() => onDelete(word.id)} aria-label={`Delete ${word.word}`}><Trash2 className="size-4 text-red-600" /></Button></div></div>)}
+      {words.map((word) => {
+        const ipaText = word.ipa || word.pronunciation;
+        return (
+          <div key={word.id} className="flex items-center justify-between gap-4 rounded-xl border border-[#e6e9e4] p-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Link href={`/admin/words/${word.id}`} className="font-semibold hover:text-[#c56b4e] hover:underline transition-colors">
+                  {word.word}
+                </Link>
+                {ipaText && (
+                  <span className="font-mono text-xs text-[#c56b4e] bg-[#f7e3cf]/50 px-2 py-0.5 rounded">
+                    {ipaText}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 truncate text-sm text-[#657477]">
+                {word.meaning || 'No meaning yet.'}
+                {word.category?.name ? ` · ${word.category.name}` : ''}
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-1">
+              <Button variant="ghost" size="icon" onClick={() => onEdit(word)} aria-label={`Edit ${word.word}`}><Pencil className="size-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => onDelete(word.id)} aria-label={`Delete ${word.word}`}><Trash2 className="size-4 text-red-600" /></Button>
+            </div>
+          </div>
+        );
+      })}
       {words.length === 0 && <p className="rounded-xl bg-[#f4f5f1] p-5 text-sm text-[#657477]">No words found.</p>}
     </div>
   </section>

@@ -37,7 +37,8 @@ export const WordForm = ({ defaultValues, onSubmit, isPending }: WordFormProps) 
     defaultValues: {
       word: defaultValues?.word || '',
       meaning: defaultValues?.meaning || '',
-      pronunciation: defaultValues?.pronunciation || '',
+      ipa: defaultValues?.ipa || defaultValues?.pronunciation || '',
+      pronunciation: defaultValues?.pronunciation || defaultValues?.ipa || '',
       level: defaultValues?.level || '',
       categoryId: defaultValues?.categoryId || '',
     },
@@ -74,17 +75,17 @@ export const WordForm = ({ defaultValues, onSubmit, isPending }: WordFormProps) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="pronunciation" className="flex items-center gap-2 text-foreground/80">
+        <Label htmlFor="ipa" className="flex items-center gap-2 text-foreground/80">
           <Volume2 className="h-4 w-4 text-amber-500" />
-          Pronunciation
+          IPA (Phiên âm)
         </Label>
         <Input 
-          id="pronunciation" 
+          id="ipa" 
           placeholder="e.g. /əˈbæn.dən/" 
           className="h-11 rounded-xl bg-background/50 font-mono text-sm focus-visible:ring-primary/30"
-          {...register('pronunciation')} 
+          {...register('ipa')} 
         />
-        {errors.pronunciation && <p className="text-sm font-medium text-destructive">{errors.pronunciation.message}</p>}
+        {errors.ipa && <p className="text-sm font-medium text-destructive">{errors.ipa.message}</p>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

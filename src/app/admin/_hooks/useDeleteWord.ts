@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteWord } from '../_api/words';
+import { adminQueryKeys } from '@/lib/adminQueryKeys';
 import { toast } from 'sonner';
 
 export const useDeleteWord = () => {
@@ -9,6 +10,7 @@ export const useDeleteWord = () => {
     mutationFn: deleteWord,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['words'] });
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
       toast.success('Word deleted successfully.');
     },
     onError: (error) => {

@@ -17,6 +17,12 @@ export const wordSchema = z.object({
     .max(100, 'Pronunciation cannot exceed 100 characters.')
     .optional()
     .or(z.literal('')),
+  ipa: z
+    .string()
+    .trim()
+    .max(100, 'IPA cannot exceed 100 characters.')
+    .optional()
+    .or(z.literal('')),
   level: z
     .string()
     .trim()
