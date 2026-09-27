@@ -5,11 +5,12 @@ import { authQueryOptions } from '@/lib/authQuery';
 
 export const useAuth = () => {
   const query = useQuery(authQueryOptions());
+  const isLearnerUser = query.data?.role === 'USER';
 
   return {
-    user: query.data ?? null,
+    user: isLearnerUser ? query.data! : null,
     isLoading: query.isLoading,
-    isAuthenticated: !!query.data,
+    isAuthenticated: isLearnerUser,
     error: query.error,
   };
 };
