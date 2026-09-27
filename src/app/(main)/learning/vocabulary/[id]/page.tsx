@@ -2,6 +2,7 @@
 
 import { use, useState } from 'react';
 import { useWord } from '../../../_hooks/useWord';
+import { useMarkWordAsLearned } from '../../../_hooks/useWords';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,7 +11,6 @@ import Link from 'next/link';
 import { ExampleList } from '../../../_components/ExampleList';
 
 import { useExamples } from '../../../_hooks/useExamples';
-import { useRecordLearningHistory } from '../../../_hooks/useLearningHistory';
 import { toast } from 'sonner';
 
 type Props = {
@@ -23,26 +23,22 @@ export default function WordDetailPage({ params }: Props) {
   const { id } = use(params);
   const { data: word, isLoading: isWordLoading, isError } = useWord(id);
   const { data: examplesData, isLoading: isExamplesLoading } = useExamples(id);
-  const recordHistory = useRecordLearningHistory();
+  const markAsLearned = useMarkWordAsLearned();
   const [isMarked, setIsMarked] = useState(false);
 
+  const isAlreadyLearned = isMarked || word?.progress?.status === 'REVIEW';
   const examples = examplesData || word?.examples || [];
 
   const handleMarkAsLearned = () => {
     if (!word) return;
     
-    recordHistory.mutate({
-      type: 'VOCABULARY',
-      title: `Learned vocabulary: ${word.word}`,
-      description: word.meaning,
-      referenceId: word.id,
-    }, {
+    markAsLearned.mutate(word.id, {
       onSuccess: () => {
         setIsMarked(true);
         toast.success(`You've learned the word "${word.word}"!`);
       },
       onError: () => {
-        toast.error('Failed to save learning history.');
+        toast.error('Failed to save learning progress.');
       }
     });
   };
@@ -141,14 +137,14 @@ export default function WordDetailPage({ params }: Props) {
               <div className="pt-2">
                 <Button 
                   onClick={handleMarkAsLearned} 
-                  disabled={recordHistory.isPending || isMarked}
+                  disabled={markAsLearned.isPending || isAlreadyLearned}
                   className={`rounded-full px-6 font-semibold shadow-md transition-all ${
-                    isMarked 
+                    isAlreadyLearned 
                       ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20' 
                       : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20'
                   }`}
                 >
-                  {isMarked ? (
+                  {isAlreadyLearned ? (
                     <>
                       <CheckCircle2 className="mr-2 h-4 w-4" />
                       Learned

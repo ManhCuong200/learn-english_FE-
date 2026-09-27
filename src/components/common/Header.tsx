@@ -81,6 +81,9 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
               <Link href="/learning/flashcards" className="transition hover:text-primary">
                 Flashcards
               </Link>
+              <Link href="/learning/quiz" className="transition hover:text-primary">
+                Quiz
+              </Link>
               <Link href="/learning/history" className="transition hover:text-primary">
                 History
               </Link>
@@ -106,6 +109,9 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
                   </DropdownMenuItem>
                   <DropdownMenuItem render={<Link href="/learning/flashcards" />}>
                     Flashcards
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/learning/quiz" />}>
+                    Quiz
                   </DropdownMenuItem>
                   <DropdownMenuItem render={<Link href="/learning/history" />}>
                     History
