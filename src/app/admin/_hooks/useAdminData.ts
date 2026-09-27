@@ -16,21 +16,26 @@ import {
   updateCategory,
   updateWord,
 } from '@/app/admin/_api/admin';
+import { useAdminAuthContext } from '@/providers/AdminAuthProvider';
 import { adminQueryKeys } from '@/lib/adminQueryKeys';
 
 export const useAdminCategories = () => {
+  const { isAuthenticated } = useAdminAuthContext();
   return useQuery({
     queryKey: adminQueryKeys.categories(),
     queryFn: getCategories,
     staleTime: 60_000,
+    enabled: isAuthenticated,
   });
 };
 
 export const useAdminWords = (search = '') => {
+  const { isAuthenticated } = useAdminAuthContext();
   return useQuery({
     queryKey: adminQueryKeys.words(search),
     queryFn: () => getWords(search),
     staleTime: 30_000,
+    enabled: isAuthenticated,
   });
 };
 

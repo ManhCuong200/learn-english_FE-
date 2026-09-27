@@ -36,6 +36,27 @@ export class ApiError extends Error {
   }
 }
 
+let refreshPromise: Promise<boolean> | null = null;
+
+const refreshTokens = async (): Promise<boolean> => {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        const response = await fetch(buildApiUrl('/auth/refresh'), {
+          method: 'POST',
+          credentials: 'include',
+        });
+        return response.ok;
+      } catch {
+        return false;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+  }
+  return refreshPromise;
+};
+
 export const apiFetch = async <T>(
   endpoint: string,
   options?: RequestInit,
@@ -61,22 +82,14 @@ export const apiFetch = async <T>(
     !endpoint.includes('/auth/refresh') &&
     !endpoint.includes('/auth/login')
   ) {
-    try {
-      const refreshResponse = await fetch(buildApiUrl('/auth/refresh'), {
-        method: 'POST',
+    const refreshed = await refreshTokens();
+    if (refreshed) {
+      // Retry original request
+      response = await fetch(buildApiUrl(endpoint), {
+        ...options,
         credentials: 'include',
+        headers,
       });
-
-      if (refreshResponse.ok) {
-        // Retry original request
-        response = await fetch(buildApiUrl(endpoint), {
-          ...options,
-          credentials: 'include',
-          headers,
-        });
-      }
-    } catch (e) {
-      // Ignore refresh error and let the original 401 throw
     }
   }
 
