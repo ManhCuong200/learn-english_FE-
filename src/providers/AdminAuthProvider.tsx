@@ -25,19 +25,21 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     queryFn: getCurrentUser,
     retry: false,
     enabled: !isLoginPage,
+    staleTime: 5 * 60 * 1000,
   });
+  const isFetching = query.isFetching || query.isLoading || query.isPending;
   const isAuthenticated = !isLoginPage && query.data?.role === 'ADMIN';
 
   const value = useMemo<AdminAuthContextValue>(
     () => ({
-      isLoading: !isLoginPage && query.isLoading,
+      isLoading: !isLoginPage && isFetching,
       isAuthenticated,
       clearSession: () => {
         queryClient.removeQueries({ queryKey: adminQueryKeys.auth });
         queryClient.removeQueries({ queryKey: adminQueryKeys.all });
       },
     }),
-    [isAuthenticated, isLoginPage, query.isLoading, queryClient],
+    [isAuthenticated, isFetching, isLoginPage, queryClient],
   );
 
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>;

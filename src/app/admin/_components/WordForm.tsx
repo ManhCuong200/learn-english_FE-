@@ -145,10 +145,11 @@ export const WordForm = ({ defaultValues, onSubmit, isPending }: WordFormProps) 
       <div className="flex justify-end pt-6 border-t mt-6">
         <Button type="submit" disabled={isPending} className="rounded-xl px-8 shadow-md hover:shadow-lg transition-all h-11">
           {isPending ? (
-            'Saving...'
+            defaultValues?.word ? 'Updating...' : 'Creating...'
           ) : (
             <>
-              <Save className="mr-2 h-4 w-4" /> Save Word
+              <Save className="mr-2 h-4 w-4" />
+              {defaultValues?.word ? 'Update Word' : 'Create Word'}
             </>
           )}
         </Button>
