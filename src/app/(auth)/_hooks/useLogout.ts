@@ -16,8 +16,8 @@ export const useLogout = () => {
   return useMutation({
     ...authMutations.logout(),
     onSuccess: () => {
+      queryClient.setQueryData(authQueryKey, null);
       queryClient.removeQueries({ queryKey: authQueryKey });
-      queryClient.invalidateQueries({ queryKey: authQueryKey });
       notifySuccess(toastManager, {
         title: 'Signed out',
         description: 'You have been signed out successfully.',
@@ -25,7 +25,10 @@ export const useLogout = () => {
       router.push(APP_ROUTES.login);
     },
     onError: (error) => {
+      queryClient.setQueryData(authQueryKey, null);
+      queryClient.removeQueries({ queryKey: authQueryKey });
       notifyError(toastManager, 'Sign out failed', error);
+      router.push(APP_ROUTES.login);
     },
   });
 };
