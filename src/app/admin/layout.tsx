@@ -29,6 +29,7 @@ const AdminLayoutInner = ({
   return (
     <AdminProtectedRoute
       isAuthenticated={isAuthenticated}
+      isLoading={isLoading}
       loadingText="Checking admin access..."
     >
       {children}
