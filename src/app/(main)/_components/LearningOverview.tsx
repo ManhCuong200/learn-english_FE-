@@ -1,4 +1,4 @@
-import { BookOpen, Check, Flame, Trophy, Play, Plus, GraduationCap, ChevronRight, Activity, Brain } from 'lucide-react';
+import { BookOpen, Check, Flame, Trophy, Play, Plus, GraduationCap, ChevronRight, Activity, Brain, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -199,6 +199,21 @@ const LearningOverview = ({ firstName }: LearningOverviewProps) => {
                 <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">Practice Quiz</h4>
                 <p className="mt-1 text-sm font-medium text-muted-foreground">
                   Test your knowledge & boost progress
+                </p>
+              </div>
+              <div className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <ChevronRight className="size-5" />
+              </div>
+            </Link>
+
+            <Link href="/learning/progress" className="group flex items-center gap-5 rounded-[1.5rem] border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+              <div className="grid size-14 place-items-center rounded-2xl bg-blue-100 text-blue-600 group-hover:scale-110 transition-transform">
+                <BarChart3 className="size-6" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">Learning Progress & Stats</h4>
+                <p className="mt-1 text-sm font-medium text-muted-foreground">
+                  View detailed study analytics & activity charts
                 </p>
               </div>
               <div className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">

@@ -8,6 +8,7 @@ import {
   Trophy,
   LayoutDashboard,
   Menu,
+  BarChart3,
 } from 'lucide-react';
 import {
   Avatar,
@@ -81,8 +82,11 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
               <Link href="/learning/flashcards" className="transition hover:text-primary">
                 Flashcards
               </Link>
-              <Link href="/learning/quiz" className="transition hover:text-primary">
+              <Link href="/learning/quizzes" className="transition hover:text-primary">
                 Quiz
+              </Link>
+              <Link href="/learning/progress" className="transition hover:text-primary">
+                Progress
               </Link>
               <Link href="/learning/history" className="transition hover:text-primary">
                 History
@@ -110,8 +114,11 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
                   <DropdownMenuItem render={<Link href="/learning/flashcards" />}>
                     Flashcards
                   </DropdownMenuItem>
-                  <DropdownMenuItem render={<Link href="/learning/quiz" />}>
+                  <DropdownMenuItem render={<Link href="/learning/quizzes" />}>
                     Quiz
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/learning/progress" />}>
+                    Progress
                   </DropdownMenuItem>
                   <DropdownMenuItem render={<Link href="/learning/history" />}>
                     History
@@ -209,6 +216,11 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
                 Learning App
               </DropdownMenuItem>
               
+              <DropdownMenuItem render={<Link href="/learning/progress" />}>
+                <BarChart3 className="size-4" />
+                Progress & Stats
+              </DropdownMenuItem>
+
               <DropdownMenuItem render={<Link href="/profile" />}>
                 <Pencil className="size-4" />
                 Edit profile
