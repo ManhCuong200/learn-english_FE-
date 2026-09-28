@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, Check, LayoutDashboard, LogOut, X, ExternalLink, DownloadCloud } from 'lucide-react';
+import { AlertCircle, Check, LayoutDashboard, LogOut, X, ExternalLink, DownloadCloud, HelpCircle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -127,6 +127,7 @@ const AdminDashboardPage = () => {
         activeHref="/admin/dashboard"
         items={[
           { label: 'Content dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Quiz Management', href: '/admin/quizzes', icon: HelpCircle },
           { label: 'View Learner App', href: '/learning', icon: ExternalLink },
         ]}
         onSignOut={() => logoutMutation.mutate()}

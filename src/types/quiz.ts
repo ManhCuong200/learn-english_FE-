@@ -90,3 +90,76 @@ export interface QuizAttempt {
 export interface QuizListResponse {
   data: QuizSummary[];
 }
+
+export interface AdminQuizQuestion {
+  id: string;
+  quizId: string;
+  wordId: string;
+  question: string;
+  type: QuizQuestionType;
+  options: string[];
+  correctAnswer: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminQuiz {
+  id: string;
+  title: string;
+  description: string | null;
+  categoryId: string | null;
+  level: string | null;
+  totalQuestions: number;
+  category?: QuizCategory | null;
+  questions?: AdminQuizQuestion[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateQuizRequest {
+  title: string;
+  description?: string | null;
+  categoryId?: string | null;
+  level?: string | null;
+}
+
+export interface UpdateQuizRequest {
+  title?: string;
+  description?: string | null;
+  categoryId?: string | null;
+  level?: string | null;
+}
+
+export interface CreateQuizQuestionRequest {
+  wordId: string;
+  question: string;
+  type: QuizQuestionType;
+  options: string[];
+  correctAnswer: string;
+}
+
+export interface UpdateQuizQuestionRequest {
+  wordId?: string;
+  question?: string;
+  type?: QuizQuestionType;
+  options?: string[];
+  correctAnswer?: string;
+}
+
+export interface AdminQuizQueryParams {
+  search?: string;
+  categoryId?: string;
+  level?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminQuizListResponse {
+  data: AdminQuiz[];
+  meta?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
