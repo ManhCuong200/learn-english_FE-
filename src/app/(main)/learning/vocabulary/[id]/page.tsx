@@ -1,13 +1,13 @@
 'use client';
 
 import { use, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useWord } from '../../../_hooks/useWord';
 import { useMarkWordAsLearned } from '../../../_hooks/useWords';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Volume2, BookOpen, LayoutTemplate, Layers, Target, PlayCircle, CheckCircle2 } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowLeft, Volume2, BookOpen, LayoutTemplate, Layers, Target, CheckCircle2 } from 'lucide-react';
 import { ExampleList } from '../../../_components/ExampleList';
 
 import { useExamples } from '../../../_hooks/useExamples';
@@ -20,6 +20,7 @@ type Props = {
 };
 
 export default function WordDetailPage({ params }: Props) {
+  const router = useRouter();
   const { id } = use(params);
   const { data: word, isLoading: isWordLoading, isError } = useWord(id);
   const { data: examplesData, isLoading: isExamplesLoading } = useExamples(id);
@@ -77,7 +78,7 @@ export default function WordDetailPage({ params }: Props) {
           <p className="mt-2 text-muted-foreground max-w-md">
             The vocabulary word you are looking for does not exist, has been removed, or could not be loaded.
           </p>
-          <Button className="mt-8 rounded-full px-8" onClick={() => window.location.href = '/learning/vocabulary'}>
+          <Button className="mt-8 rounded-full px-8" onClick={() => router.push('/learning/vocabulary')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Return to Vocabulary
           </Button>
@@ -90,7 +91,7 @@ export default function WordDetailPage({ params }: Props) {
     <div className="min-h-screen bg-slate-50/50 pb-20">
       <div className="mx-auto max-w-4xl p-4 md:p-8 space-y-6">
         <div>
-          <Button variant="ghost" className="rounded-full hover:bg-primary/5 hover:text-primary transition-colors" onClick={() => window.location.href = '/learning/vocabulary'}>
+          <Button variant="ghost" className="rounded-full hover:bg-primary/5 hover:text-primary transition-colors" onClick={() => router.push('/learning/vocabulary')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Vocabulary
           </Button>

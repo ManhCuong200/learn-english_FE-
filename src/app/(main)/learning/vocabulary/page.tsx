@@ -5,7 +5,6 @@ import { useWords } from '../../_hooks/useWords';
 import { WordList } from '../../_components/WordList';
 import { WordFilters } from '../../_components/WordFilters';
 import { WordQuery } from '@/types/word';
-import { Sparkles } from 'lucide-react';
 
 export default function VocabularyPage() {
   const searchParams = useSearchParams();

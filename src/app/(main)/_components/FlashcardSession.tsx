@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useFlashcards, useReviewFlashcard } from '../_hooks/useFlashcard';
 import { FlashcardCard } from './FlashcardCard';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Brain, Trophy, ArrowRight, Loader2 } from 'lucide-react';
+import { Brain, Trophy, ArrowRight } from 'lucide-react';
 import type { FlashcardReviewResultType } from '@/types/flashcard';
 import { toast } from 'sonner';
 
 export const FlashcardSession = () => {
+  const router = useRouter();
   const { data, isLoading, isError, refetch } = useFlashcards(10);
   const reviewMutation = useReviewFlashcard();
 
@@ -68,7 +70,7 @@ export const FlashcardSession = () => {
         <p className="text-muted-foreground mb-8 text-lg">
           You don&apos;t have any vocabulary to review right now. Add some new words or check back later!
         </p>
-        <Button onClick={() => window.location.href = '/learning/vocabulary'} size="lg" className="rounded-full px-8">
+        <Button onClick={() => router.push('/learning/vocabulary')} size="lg" className="rounded-full px-8">
           Explore Vocabulary <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
@@ -89,7 +91,7 @@ export const FlashcardSession = () => {
           Awesome job! You&apos;ve reviewed {cards.length} flashcards today.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button onClick={() => window.location.href = '/learning'} variant="outline" size="lg" className="rounded-full w-full sm:w-auto h-14 px-8 font-bold text-base border-border/60 hover:bg-muted">
+          <Button onClick={() => router.push('/learning')} variant="outline" size="lg" className="rounded-full w-full sm:w-auto h-14 px-8 font-bold text-base border-border/60 hover:bg-muted">
             Back to Home
           </Button>
           <Button onClick={handleRestart} size="lg" className="rounded-full w-full sm:w-auto h-14 px-8 font-bold text-base shadow-lg shadow-primary/20">

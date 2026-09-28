@@ -47,20 +47,22 @@ export const QuizSession = ({
 
   // If restoring an existing attempt from attemptId query param
   useEffect(() => {
-    if (restoredAttempt && restoredAttempt.completedAt) {
-      setQuizResult({
-        attemptId: restoredAttempt.attemptId,
-        quiz: restoredAttempt.quiz,
-        result: {
-          score: restoredAttempt.score,
-          correctAnswers: restoredAttempt.correctAnswers,
-          totalQuestions: restoredAttempt.totalQuestions,
-        },
-        completedAt: restoredAttempt.completedAt,
-        answers: restoredAttempt.answers,
+    if (restoredAttempt && restoredAttempt.completedAt && quizResult?.attemptId !== restoredAttempt.attemptId) {
+      queueMicrotask(() => {
+        setQuizResult({
+          attemptId: restoredAttempt.attemptId,
+          quiz: restoredAttempt.quiz,
+          result: {
+            score: restoredAttempt.score,
+            correctAnswers: restoredAttempt.correctAnswers,
+            totalQuestions: restoredAttempt.totalQuestions,
+          },
+          completedAt: restoredAttempt.completedAt!,
+          answers: restoredAttempt.answers,
+        });
       });
     }
-  }, [restoredAttempt]);
+  }, [restoredAttempt, quizResult?.attemptId]);
 
   // Handle start/restart quiz
   const handleStartQuiz = async () => {

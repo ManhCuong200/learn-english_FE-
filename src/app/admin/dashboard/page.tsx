@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, BookOpen, Check, LayoutDashboard, LogOut, X, ExternalLink, DownloadCloud, Sparkles } from 'lucide-react';
+import { AlertCircle, Check, LayoutDashboard, LogOut, X, ExternalLink, DownloadCloud } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';

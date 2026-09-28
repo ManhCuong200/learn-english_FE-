@@ -23,7 +23,7 @@ export const WordList = ({ words, isLoading }: WordListProps) => {
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
         <h3 className="mt-2 text-sm font-semibold">No vocabulary found</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Try adjusting your search or filters to find what you're looking for.
+          Try adjusting your search or filters to find what you&apos;re looking for.
         </p>
       </div>
     );

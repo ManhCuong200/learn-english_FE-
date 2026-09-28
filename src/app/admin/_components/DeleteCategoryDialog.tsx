@@ -26,7 +26,7 @@ export const DeleteCategoryDialog = ({ categoryId, categoryName, children }: Del
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the category
-            "{categoryName}" and remove its data from our servers.
+            &quot;{categoryName}&quot; and remove its data from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Volume2, RefreshCcw, Smile, Target, Brain, Frown } from 'lucide-react';
+import { Volume2, RefreshCcw, Smile, Brain, Frown } from 'lucide-react';
 import type { FlashcardWord, FlashcardReviewResultType } from '@/types/flashcard';
 
 type Props = {

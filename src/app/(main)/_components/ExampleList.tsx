@@ -44,7 +44,7 @@ export const ExampleList = ({ examples, isLoading }: LearnerExampleListProps) =>
             </div>
             <div className="space-y-2">
               <p className="text-lg md:text-xl font-medium text-foreground leading-relaxed">
-                "{example.content}"
+                &quot;{example.content}&quot;
               </p>
               {example.meaning && (
                 <p className="text-base md:text-lg text-muted-foreground">

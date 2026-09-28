@@ -33,7 +33,7 @@ const TwoFactorSetup = ({ isTwoFactorEnabled }: { isTwoFactorEnabled?: boolean }
       const data = await generate2FAMutation.mutateAsync();
       setQrCodeUrl(data.qrCodeDataUrl);
       setSetupMode(true);
-    } catch (e) { }
+    } catch { }
   };
 
   const handleTurnOn = async () => {
@@ -41,7 +41,7 @@ const TwoFactorSetup = ({ isTwoFactorEnabled }: { isTwoFactorEnabled?: boolean }
       await turnOn2FAMutation.mutateAsync(twoFactorCode);
       setSetupMode(false);
       setTwoFactorCode('');
-    } catch (e) { }
+    } catch { }
   };
 
   const handleTurnOff = async () => {

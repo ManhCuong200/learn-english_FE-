@@ -10,7 +10,9 @@ export const UnauthorizedWarning = () => {
   const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
-    setCurrentTime(new Date().toLocaleString('vi-VN'));
+    queueMicrotask(() => {
+      setCurrentTime(new Date().toLocaleString('vi-VN'));
+    });
 
     fetch('https://api.ipify.org?format=json')
       .then((res) => res.json())

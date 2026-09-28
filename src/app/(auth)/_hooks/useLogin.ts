@@ -5,7 +5,7 @@ import { useToastManager } from '@/components/ui/toast';
 import { authQueryKey } from '@/lib/queryKeys';
 import { notifyError, notifySuccess } from '@/lib/notifications';
 import { authMutations } from '@/lib/mutationOptions';
-import type { AuthUser, LoginRequest } from '@/types/auth';
+import type { AuthUser } from '@/types/auth';
 
 export const useLogin = () => {
   const queryClient = useQueryClient();

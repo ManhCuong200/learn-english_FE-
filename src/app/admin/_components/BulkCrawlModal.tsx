@@ -96,8 +96,9 @@ export const BulkCrawlModal = ({ isOpen, onClose, categories, onSuccess }: BulkC
 
       setResultMessage(`🎉 ${res.message}! Đã tự động lấy phiên âm IPA và nghĩa tiếng Việt.`);
       onSuccess();
-    } catch (err: any) {
-      setResultMessage(`❌ Lỗi khi cào từ vựng: ${err?.message || 'Không thể cào từ'}`);
+    } catch (err: unknown) {
+      const errorObj = err as Error;
+      setResultMessage(`❌ Lỗi khi cào từ vựng: ${errorObj?.message || 'Không thể cào từ'}`);
     } finally {
       setIsLoading(false);
     }

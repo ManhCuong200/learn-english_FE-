@@ -4,7 +4,6 @@ import { useSearchParams } from 'next/navigation';
 import { useLearningHistory } from '../../_hooks/useLearningHistory';
 import { LearningHistoryList } from '../../_components/LearningHistoryList';
 import { LearningHistoryFilters } from '../../_components/LearningHistoryFilters';
-import { Sparkles, History } from 'lucide-react';
 import type { LearningActivityType } from '@/types/learning-history';
 
 export default function LearningHistoryPage() {

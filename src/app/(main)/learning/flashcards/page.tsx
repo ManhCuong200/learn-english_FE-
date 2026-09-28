@@ -1,7 +1,6 @@
 'use client';
 
 import { FlashcardSession } from '../../_components/FlashcardSession';
-import { Layers } from 'lucide-react';
 
 export default function FlashcardsPage() {
   return (

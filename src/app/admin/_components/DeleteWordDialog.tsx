@@ -38,7 +38,7 @@ export const DeleteWordDialog = ({ word, children }: DeleteWordDialogProps) => {
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the word
-            "{word.word}" from the system.
+            &quot;{word.word}&quot; from the system.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

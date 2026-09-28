@@ -1,13 +1,10 @@
 'use client';
 
 import { useAuth } from '@/app/(auth)/_hooks/useAuth';
-import { useLogout } from '@/app/(auth)/_hooks/useLogout';
-import { BookOpen, Headphones, LayoutDashboard } from 'lucide-react';
 import LearningOverview from '../_components/LearningOverview';
 
 const LearningPage = () => {
   const { user, isLoading, isAuthenticated } = useAuth();
-  const logoutMutation = useLogout();
 
   if (isLoading) {
     return (

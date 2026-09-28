@@ -27,8 +27,8 @@ export const getWord = async (id: string): Promise<Word> => {
   });
 };
 
-export const markWordAsLearned = async (id: string): Promise<{ message: string; progress: any }> => {
-  return apiFetch<{ message: string; progress: any }>(`/words/${id}/learn`, {
+export const markWordAsLearned = async (id: string): Promise<{ message: string; progress: unknown }> => {
+  return apiFetch<{ message: string; progress: unknown }>(`/words/${id}/learn`, {
     method: 'POST',
   });
 };
