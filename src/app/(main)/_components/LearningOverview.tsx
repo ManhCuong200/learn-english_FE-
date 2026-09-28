@@ -191,7 +191,7 @@ const LearningOverview = ({ firstName }: LearningOverviewProps) => {
               </div>
             </Link>
 
-            <Link href="/learning/quiz" className="group flex items-center gap-5 rounded-[1.5rem] border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+            <Link href="/learning/quizzes" className="group flex items-center gap-5 rounded-[1.5rem] border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
               <div className="grid size-14 place-items-center rounded-2xl bg-amber-100 text-amber-600 group-hover:scale-110 transition-transform">
                 <Brain className="size-6" />
               </div>

@@ -123,53 +123,23 @@ const Header = ({ variant = 'public' }: HeaderProps) => {
         )}
 
         <div className="flex items-center gap-4">
-          {!isPublic && (
-            <div className="flex md:hidden items-center">
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <button
-                      type="button"
-                      className="p-2 text-foreground focus:outline-none"
-                    >
-                      <Menu className="size-6" />
-                    </button>
-                  }
-                />
-                <DropdownMenuContent align="end" className="w-56 mt-2">
-                  <DropdownMenuItem render={<Link href="/learning" />}>
-                    My learning
-                  </DropdownMenuItem>
-                  <DropdownMenuItem render={<Link href="/learning/vocabulary" />}>
-                    Vocabulary
-                  </DropdownMenuItem>
-                  <DropdownMenuItem render={<Link href="/learning/flashcards" />}>
-                    Flashcards
-                  </DropdownMenuItem>
-                  <DropdownMenuItem render={<Link href="/learning/history" />}>
-                    History
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
 
           {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  type="button"
-                  className="rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                />
-              }
-            >
-              <Avatar>
-                <AvatarFallback>
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    className="rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    <Avatar>
+                      <AvatarFallback>
+                        {user.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                }
+              />
 
             <DropdownMenuContent
               align="end"
