@@ -81,7 +81,8 @@ export const apiFetch = async <T>(
     response.status === 401 &&
     !endpoint.includes('/auth/refresh') &&
     !endpoint.includes('/auth/login') &&
-    !endpoint.includes('/auth/logout')
+    !endpoint.includes('/auth/logout') &&
+    !endpoint.includes('/auth/me')
   ) {
     const refreshed = await refreshTokens();
     if (refreshed) {
