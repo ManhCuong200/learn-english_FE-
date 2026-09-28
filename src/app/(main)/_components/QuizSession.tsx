@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { QuizQuestion as QuizQuestionType, QuizSubmitResponse } from '@/types/quiz';
-import { QuizProgress } from './QuizProgress';
+import { QuizSessionProgress } from './QuizSessionProgress';
 import { QuizQuestion } from './QuizQuestion';
 import { QuizResult } from './QuizResult';
 import { useSubmitQuiz } from '../_hooks/useSubmitQuiz';
@@ -189,7 +189,7 @@ export const QuizSession = ({
       </div>
 
       {/* Progress Bar */}
-      <QuizProgress
+      <QuizSessionProgress
         currentIndex={currentQuestionIndex}
         totalQuestions={questions.length}
       />
