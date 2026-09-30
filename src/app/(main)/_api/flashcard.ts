@@ -16,6 +16,6 @@ export const getFlashcard = async (wordId: string): Promise<FlashcardWord> => {
 export const reviewFlashcard = async (wordId: string, payload: ReviewFlashcardPayload): Promise<ReviewFlashcardResponse> => {
   return apiFetch<ReviewFlashcardResponse>(`/flashcards/${wordId}/review`, {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: payload,
   });
 };

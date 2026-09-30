@@ -13,7 +13,7 @@ const adminApi = {
   login: (request: AdminLoginRequest) =>
     apiFetch<AdminLoginResponse>('/auth/admin/login', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: request,
     }),
   logout: () =>
     apiFetch<{ message?: string }>('/auth/logout', {
@@ -31,23 +31,23 @@ const adminApi = {
   createCategory: (input: CategoryInput) =>
     apiFetch<AdminCategory>('/categories', {
       method: 'POST',
-      body: JSON.stringify(input),
+      body: input,
     }),
   updateCategory: (id: string, input: CategoryInput) =>
     apiFetch<AdminCategory>(`/categories/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify(input),
+      body: input,
     }),
   deleteCategory: (id: string) => apiFetch<void>(`/categories/${id}`, { method: 'DELETE' }),
   createWord: (input: WordInput) =>
     apiFetch<AdminWord>('/words', {
       method: 'POST',
-      body: JSON.stringify(input),
+      body: input,
     }),
   updateWord: (id: string, input: WordInput) =>
     apiFetch<AdminWord>(`/words/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify(input),
+      body: input,
     }),
   deleteWord: (id: string) => apiFetch<void>(`/words/${id}`, { method: 'DELETE' }),
 };

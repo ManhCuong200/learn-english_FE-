@@ -16,14 +16,14 @@ export const getCategory = async (id: string): Promise<Category> => {
 export const createCategory = async (data: CreateCategoryRequest): Promise<Category> => {
   return apiFetch<Category>('/categories', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 
 export const updateCategory = async (id: string, data: UpdateCategoryRequest): Promise<Category> => {
   return apiFetch<Category>(`/categories/${id}`, {
     method: 'PATCH',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 

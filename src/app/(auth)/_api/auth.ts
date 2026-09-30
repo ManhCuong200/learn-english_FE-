@@ -16,22 +16,22 @@ const authApi = {
   login: (request: LoginRequest) =>
     apiFetch<LoginResponse>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: request,
     }),
   register: (request: RegisterRequest) =>
     apiFetch<RegisterResponse>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: request,
     }),
   forgotPassword: (request: ForgotPasswordRequest) =>
     apiFetch<ForgotPasswordResponse>('/auth/forgot-password', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: request,
     }),
   resetPassword: (request: ResetPasswordRequest) =>
     apiFetch<ResetPasswordResponse>('/auth/reset-password', {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: request,
     }),
   getCurrentUser: () => apiFetch<AuthUser>('/auth/me'),
 };

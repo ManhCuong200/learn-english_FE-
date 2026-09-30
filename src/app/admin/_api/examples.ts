@@ -10,14 +10,14 @@ export const getExamples = async (wordId: string): Promise<Example[]> => {
 export const createExample = async (wordId: string, data: CreateExampleRequest): Promise<Example> => {
   return apiFetch<Example>(`/words/${wordId}/examples`, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 
 export const updateExample = async (id: string, data: UpdateExampleRequest): Promise<Example> => {
   return apiFetch<Example>(`/examples/${id}`, {
     method: 'PATCH',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 

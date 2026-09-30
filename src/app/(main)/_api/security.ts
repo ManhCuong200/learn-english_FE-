@@ -29,7 +29,7 @@ export const generate2FA = () => {
 export const turnOn2FA = (code: string) => {
   return apiFetch<{ message: string }>('/auth/2fa/turn-on', {
     method: 'POST',
-    body: JSON.stringify({ code }),
+    body: { code },
   });
 };
 

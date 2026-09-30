@@ -9,6 +9,6 @@ export const generateQuizQuestions = async (
 ): Promise<GenerateQuizQuestionsResponse> => {
   return apiFetch<GenerateQuizQuestionsResponse>('/quizzes/ai/generate', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: payload,
   });
 };

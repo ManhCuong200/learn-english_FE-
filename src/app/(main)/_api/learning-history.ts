@@ -27,6 +27,6 @@ export const recordLearningHistory = async (
 ): Promise<void> => {
   return apiFetch<void>('/learning-history', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: payload,
   });
 };

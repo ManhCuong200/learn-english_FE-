@@ -37,7 +37,7 @@ export const getAdminQuiz = async (id: string): Promise<AdminQuiz> => {
 export const createQuiz = async (data: CreateQuizRequest): Promise<AdminQuiz> => {
   return apiFetch<AdminQuiz>('/quizzes', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 
@@ -47,7 +47,7 @@ export const updateQuiz = async (
 ): Promise<AdminQuiz> => {
   return apiFetch<AdminQuiz>(`/quizzes/${id}`, {
     method: 'PATCH',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 
@@ -63,7 +63,7 @@ export const createQuizQuestion = async (
 ): Promise<AdminQuizQuestion> => {
   return apiFetch<AdminQuizQuestion>(`/quizzes/${quizId}/questions`, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 
@@ -73,7 +73,7 @@ export const updateQuizQuestion = async (
 ): Promise<AdminQuizQuestion> => {
   return apiFetch<AdminQuizQuestion>(`/quizzes/questions/${questionId}`, {
     method: 'PATCH',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 

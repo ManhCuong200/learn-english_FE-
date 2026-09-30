@@ -30,14 +30,14 @@ export const getWord = async (id: string): Promise<Word> => {
 export const createWord = async (data: CreateWordRequest): Promise<Word> => {
   return apiFetch<Word>('/words', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 
 export const updateWord = async (id: string, data: UpdateWordRequest): Promise<Word> => {
   return apiFetch<Word>(`/words/${id}`, {
     method: 'PATCH',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
 
@@ -66,6 +66,6 @@ export const bulkCrawlWords = async (data: { words: string[]; categoryId: string
     words: Word[];
   }>('/words/bulk-crawl', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   });
 };
