@@ -46,7 +46,7 @@ export async function submitQuiz(
 ): Promise<QuizSubmitResponse> {
   return apiFetch<QuizSubmitResponse>(`/quizzes/attempts/${attemptId}/submit`, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   });
 }
 

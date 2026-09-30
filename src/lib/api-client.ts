@@ -109,6 +109,8 @@ export const apiClient = async <T = unknown>(
   try {
     const requestBody = isFormData
       ? (body as FormData)
+      : typeof body === 'string'
+      ? body
       : body !== undefined
       ? JSON.stringify(body)
       : undefined;
