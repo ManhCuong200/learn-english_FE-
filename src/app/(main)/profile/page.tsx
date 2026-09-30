@@ -12,7 +12,7 @@ import {
 
 import { useAuth } from '@/app/(auth)/_hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
-import { SecuritySettings } from '../_components/SecuritySettings';
+import { SecuritySettings } from '@/app/(main)/_components/profile/SecuritySettings';
 
 const levelProgress = [
   { level: 'Beginner', score: 0, words: 0, exercises: 0 },

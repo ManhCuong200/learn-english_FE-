@@ -1,6 +1,6 @@
 'use client';
 
-import { FlashcardSession } from '../../_components/FlashcardSession';
+import { FlashcardSession } from '@/app/(main)/_components/flashcards/FlashcardSession';
 
 export default function FlashcardsPage() {
   return (

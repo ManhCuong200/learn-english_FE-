@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useToastManager } from '@/components/ui/toast';
-import { authQueryKey } from '@/lib/queryKeys';
+import { authKeys } from '@/lib/queryKeys';
 import { notifyError, notifySuccess } from '@/lib/notifications';
 import { APP_ROUTES } from '@/constants/routes';
 import { authMutations } from '@/lib/mutationOptions';
@@ -16,8 +16,8 @@ export const useLogout = () => {
   return useMutation({
     ...authMutations.logout(),
     onSuccess: () => {
-      queryClient.setQueryData(authQueryKey, null);
-      queryClient.removeQueries({ queryKey: authQueryKey });
+      queryClient.setQueryData(authKeys.me(), null);
+      queryClient.removeQueries({ queryKey: authKeys.all });
       notifySuccess(toastManager, {
         title: 'Signed out',
         description: 'You have been signed out successfully.',
@@ -25,8 +25,8 @@ export const useLogout = () => {
       router.push(APP_ROUTES.login);
     },
     onError: (error) => {
-      queryClient.setQueryData(authQueryKey, null);
-      queryClient.removeQueries({ queryKey: authQueryKey });
+      queryClient.setQueryData(authKeys.me(), null);
+      queryClient.removeQueries({ queryKey: authKeys.all });
       notifyError(toastManager, 'Sign out failed', error);
       router.push(APP_ROUTES.login);
     },

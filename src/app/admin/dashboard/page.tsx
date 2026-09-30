@@ -13,9 +13,9 @@ import { AppSidebar } from '@/components/common/AppSidebar';
 import { ApiError } from '@/api';
 import { clearAdminSession } from '@/app/admin/_hooks/useAdminAuth';
 import type { AdminCategory, AdminWord, CategoryInput, WordInput } from '@/types/admin';
-import { CategoryForm, WordForm } from '@/app/admin/_components/AdminForms';
-import { CategoryPanel, WordPanel } from '@/app/admin/_components/AdminDataPanels';
-import { BulkCrawlModal } from '@/app/admin/_components/BulkCrawlModal';
+import { CategoryForm, WordForm } from '@/app/admin/_components/overview/AdminForms';
+import { CategoryPanel, WordPanel } from '@/app/admin/_components/overview/AdminDataPanels';
+import { BulkCrawlModal } from '@/app/admin/_components/words/BulkCrawlModal';
 
 const errorMessage = (error: unknown) => {
   return error instanceof Error ? error.message : 'Something went wrong. Please try again.';

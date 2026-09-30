@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToastManager } from '@/components/ui/toast';
-import { authQueryKey } from '@/lib/queryKeys';
+import { authKeys } from '@/lib/queryKeys';
 import { notifyError, notifySuccess } from '@/lib/notifications';
 import { authMutations } from '@/lib/mutationOptions';
 import type { AuthUser } from '@/types/auth';
@@ -17,8 +17,7 @@ export const useLogin = () => {
       if (data.isTwoFactorRequired) {
         return; // Let the component handle it
       }
-      queryClient.setQueryData<AuthUser>(authQueryKey, data.user!);
-      queryClient.invalidateQueries({ queryKey: authQueryKey });
+      queryClient.setQueryData<AuthUser>(authKeys.me(), data.user!);
       notifySuccess(toastManager, {
         title: 'Welcome back',
         description: 'You have signed in successfully.',

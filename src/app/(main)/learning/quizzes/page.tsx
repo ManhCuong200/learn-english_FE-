@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useQuizzes } from '../../_hooks/useQuizzes';
-import { QuizFilters } from '../../_components/QuizFilters';
-import { QuizList } from '../../_components/QuizList';
+import { QuizFilters } from '@/app/(main)/_components/quizzes/QuizFilters';
+import { QuizList } from '@/app/(main)/_components/quizzes/QuizList';
 import { HelpCircle } from 'lucide-react';
 
 export default function QuizzesPage() {

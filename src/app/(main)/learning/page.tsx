@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/app/(auth)/_hooks/useAuth';
-import LearningOverview from '../_components/LearningOverview';
+import LearningOverview from '@/app/(main)/_components/overview/LearningOverview';
 
 const LearningPage = () => {
   const { user, isLoading, isAuthenticated } = useAuth();

@@ -3,7 +3,7 @@
 import { AppSidebar } from '@/components/common/AppSidebar';
 import { LayoutDashboard, HelpCircle, ExternalLink } from 'lucide-react';
 import { useAdminLogout } from '@/app/admin/_hooks/useAdminAuth';
-import { QuizForm } from '@/app/admin/_components/QuizForm';
+import { QuizForm } from '@/app/admin/_components/quizzes/QuizForm';
 
 export default function CreateQuizPage() {
   const logoutMutation = useAdminLogout();

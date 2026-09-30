@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useQuiz } from '../../../_hooks/useQuiz';
-import { useStartQuiz } from '../../../_hooks/useStartQuiz';
-import { QuizSession } from '../../../_components/QuizSession';
+import { useQuiz } from "@/app/(main)/_hooks/useQuiz";
+import { useStartQuiz } from "@/app/(main)/_hooks/useStartQuiz";
+import { QuizSession } from '@/app/(main)/_components/quizzes/QuizSession';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';

@@ -1,18 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateWord } from '../_api/words';
-import { adminQueryKeys } from '@/lib/adminQueryKeys';
-import { UpdateWordRequest } from '@/types/word';
+import { adminKeys, wordKeys } from '@/lib/queryKeys';
+import { UpdateWordRequest, Word } from '@/types/word';
 import { toast } from 'sonner';
+import { ApiError } from '@/lib/api-client';
 
 export const useUpdateWord = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateWordRequest }) => updateWord(id, data),
+  return useMutation<Word, ApiError, { id: string; data: UpdateWordRequest }>({
+    mutationFn: ({ id, data }) => updateWord(id, data),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['words'] });
-      queryClient.invalidateQueries({ queryKey: ['words', variables.id] });
-      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: wordKeys.all });
+      queryClient.invalidateQueries({ queryKey: wordKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.all });
       toast.success('Word updated successfully.');
     },
     onError: (error) => {

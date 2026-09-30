@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Volume2, BookOpen, LayoutTemplate, Layers, Target, CheckCircle2 } from 'lucide-react';
-import { ExampleList } from '../../../_components/ExampleList';
+import { ExampleList } from '@/app/(main)/_components/vocabulary/ExampleList';
 
 import { useExamples } from '../../../_hooks/useExamples';
 import { toast } from 'sonner';

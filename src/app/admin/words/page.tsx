@@ -1,10 +1,10 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useWords } from '../_hooks/useWords';
-import { WordList } from '../_components/WordList';
-import { WordFilters } from '../_components/WordFilters';
-import { CreateWordDialog } from '../_components/CreateWordDialog';
+import { useWords } from '@/app/admin/_hooks/useWords';
+import { WordList } from '@/app/admin/_components/words/WordList';
+import { WordFilters } from '@/app/admin/_components/words/WordFilters';
+import { CreateWordDialog } from '@/app/admin/_components/words/CreateWordDialog';
 import { WordQuery } from '@/types/word';
 import { BookA } from 'lucide-react';
 

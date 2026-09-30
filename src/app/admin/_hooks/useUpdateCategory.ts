@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateCategory } from '../_api/categories';
 import { UpdateCategoryRequest, Category } from '@/types/category';
 import { toast } from 'sonner';
+import { adminKeys, categoryKeys } from '@/lib/queryKeys';
+import { ApiError } from '@/lib/api-client';
 
 type UpdateArgs = {
   id: string;
@@ -11,11 +13,12 @@ type UpdateArgs = {
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<Category, Error, UpdateArgs>({
+  return useMutation<Category, ApiError, UpdateArgs>({
     mutationFn: ({ id, data }) => updateCategory(id, data),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      queryClient.invalidateQueries({ queryKey: ['categories', data.id] });
+      queryClient.invalidateQueries({ queryKey: adminKeys.all });
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all });
+      queryClient.invalidateQueries({ queryKey: adminKeys.category(data.id) });
       toast.success('Category updated successfully.');
     },
     onError: (error) => {

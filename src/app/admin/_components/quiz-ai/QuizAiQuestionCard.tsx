@@ -1,0 +1,334 @@
+'use client';
+
+import React, { memo, useCallback, useMemo } from 'react';
+import { Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
+
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
+import { useWords } from '@/app/admin/_hooks/useWords';
+import type { QuizQuestionType } from '@/types/quiz';
+import type { DraftAiQuestion } from '@/types/quiz-ai';
+import type { Word } from '@/types/word';
+
+interface QuizAiQuestionCardProps {
+  index: number;
+  question: DraftAiQuestion;
+  onChange: (updated: DraftAiQuestion) => void;
+  onDelete: () => void;
+}
+
+const QUESTION_TYPES: { label: string; value: QuizQuestionType }[] = [
+  { label: 'Meaning', value: 'MEANING' },
+  { label: 'Fill in the Blank', value: 'FILL_BLANK' },
+  { label: 'Translation', value: 'TRANSLATION' },
+];
+
+export const QuizAiQuestionCard = memo(
+  ({ index, question, onChange, onDelete }: QuizAiQuestionCardProps) => {
+    const { data: words = [] } = useWords();
+
+    // Memoize target word search
+    const targetWord = useMemo(
+      () => words.find((w: Word) => w.id === question.wordId),
+      [words, question.wordId],
+    );
+
+    const handleOptionChange = useCallback(
+      (optIdx: number, val: string) => {
+        const newOptions = [...question.options];
+        newOptions[optIdx] = val;
+
+        let newCorrect = question.correctAnswer;
+        const trimmedNewOptions = newOptions.map((o) => o.trim());
+
+        if (newCorrect && !trimmedNewOptions.includes(newCorrect.trim())) {
+          newCorrect = trimmedNewOptions[0] || '';
+        }
+
+        onChange({
+          ...question,
+          options: newOptions,
+          correctAnswer: newCorrect,
+        });
+      },
+      [onChange, question],
+    );
+
+    // Validation checks for Card border & badge status
+    const { hasEmptyOption, isUnique, hasValidCorrectAnswer, isValid } =
+      useMemo(() => {
+        const trimmed = question.options.map((o) => o.trim());
+        const empty = trimmed.some((o) => !o);
+        const unique = new Set(trimmed.map((o) => o.toLowerCase())).size === 4;
+        const validCorrect =
+          Boolean(question.correctAnswer.trim()) &&
+          trimmed.some(
+            (o) =>
+              o.toLowerCase() === question.correctAnswer.trim().toLowerCase(),
+          );
+        const valid =
+          Boolean(question.question.trim()) &&
+          !empty &&
+          unique &&
+          validCorrect;
+
+        return {
+          hasEmptyOption: empty,
+          isUnique: unique,
+          hasValidCorrectAnswer: validCorrect,
+          isValid: valid,
+        };
+      }, [question.options, question.question, question.correctAnswer]);
+
+    return (
+      <Card
+        className={`relative transition-all shadow-sm border ${
+          !isValid
+            ? 'border-destructive/40 bg-destructive/5'
+            : question.selected
+            ? 'border-primary/50 bg-card shadow-md'
+            : 'border-border bg-card'
+        }`}
+      >
+        <CardHeader className="flex flex-row items-center justify-between border-b pb-4 pt-4 px-6 bg-muted/20">
+          <div className="flex items-center gap-3">
+            {/* Select Checkbox */}
+            <Checkbox
+              id={`select-q-${question.id}`}
+              checked={question.selected}
+              onCheckedChange={(checked) =>
+                onChange({ ...question, selected: Boolean(checked) })
+              }
+            />
+            <Label
+              htmlFor={`select-q-${question.id}`}
+              className="cursor-pointer font-bold text-base text-foreground"
+            >
+              Question {index + 1}
+            </Label>
+
+            {/* Type Badge */}
+            <Badge variant="secondary" className="font-semibold text-xs">
+              {question.type}
+            </Badge>
+
+            {/* Validation Status Badge */}
+            {!isValid ? (
+              <Badge variant="destructive" className="gap-1 text-xs">
+                <AlertCircle className="size-3" /> Needs Review
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="gap-1 text-xs border-green-500/40 text-green-600 dark:text-green-400"
+              >
+                <CheckCircle2 className="size-3" /> Valid
+              </Badge>
+            )}
+          </div>
+
+          {/* Delete Button */}
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              }
+            />
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remove Question?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to remove Question {index + 1} from
+                  your draft list?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Remove
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardHeader>
+
+        <CardContent className="space-y-4 pt-5 px-6">
+          {/* Vocabulary Info */}
+          <div className="rounded-lg bg-muted/40 p-3 text-sm flex items-center justify-between border border-border/60">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+                Target Vocabulary
+              </span>
+              <span className="font-bold text-foreground">
+                {targetWord ? targetWord.word : `Word ID: ${question.wordId}`}
+              </span>
+              {targetWord?.meaning && (
+                <span className="text-muted-foreground ml-2">
+                  — {targetWord.meaning}
+                </span>
+              )}
+            </div>
+            {targetWord?.level && (
+              <Badge variant="outline">{targetWord.level}</Badge>
+            )}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Question Type Selector */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Question Type
+              </Label>
+              <Select
+                value={question.type}
+                onValueChange={(val: string | null) =>
+                  val && onChange({ ...question, type: val as QuizQuestionType })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {QUESTION_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Word ID Selector (Optional edit) */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Vocabulary Word Reference
+              </Label>
+              <Select
+                value={question.wordId}
+                onValueChange={(val: string | null) =>
+                  onChange({ ...question, wordId: val ?? '' })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select word..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {words.map((w: Word) => (
+                    <SelectItem key={w.id} value={w.id}>
+                      <span className="font-semibold">{w.word}</span>
+                      {w.meaning ? ` — ${w.meaning}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Question Text */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Question Text <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              value={question.question}
+              onChange={(e) =>
+                onChange({ ...question, question: e.target.value })
+              }
+              placeholder="Question text..."
+            />
+          </div>
+
+          {/* Options */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Options (Exactly 4 choices){' '}
+                <span className="text-destructive">*</span>
+              </Label>
+              {!isUnique && (
+                <span className="text-xs text-destructive font-medium">
+                  Duplicate options detected
+                </span>
+              )}
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[0, 1, 2, 3].map((optIdx) => (
+                <div key={optIdx} className="flex items-center gap-2">
+                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                    {String.fromCharCode(65 + optIdx)}
+                  </span>
+                  <Input
+                    value={question.options[optIdx] || ''}
+                    onChange={(e) => handleOptionChange(optIdx, e.target.value)}
+                    placeholder={`Option ${optIdx + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Correct Answer */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Correct Answer <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={question.correctAnswer}
+              onValueChange={(val: string | null) =>
+                onChange({ ...question, correctAnswer: val ?? '' })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select correct answer..." />
+              </SelectTrigger>
+              <SelectContent>
+                {question.options.map((opt, i) =>
+                  opt.trim() ? (
+                    <SelectItem key={i} value={opt}>
+                      Option {String.fromCharCode(65 + i)}: {opt}
+                    </SelectItem>
+                  ) : null,
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  },
+);
+
+QuizAiQuestionCard.displayName = 'QuizAiQuestionCard';

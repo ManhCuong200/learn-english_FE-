@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
-import { CategoryList } from '../_components/CategoryList';
-import { CreateCategoryDialog } from '../_components/CreateCategoryDialog';
+import { CategoryList } from '@/app/admin/_components/categories/CategoryList';
+import { CreateCategoryDialog } from '@/app/admin/_components/categories/CreateCategoryDialog';
 
 export const metadata: Metadata = {
   title: 'Manage Categories | Admin',

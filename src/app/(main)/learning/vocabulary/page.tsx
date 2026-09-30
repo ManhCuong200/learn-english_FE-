@@ -2,8 +2,8 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useWords } from '../../_hooks/useWords';
-import { WordList } from '../../_components/WordList';
-import { WordFilters } from '../../_components/WordFilters';
+import { WordList } from '@/app/(main)/_components/vocabulary/WordList';
+import { WordFilters } from '@/app/(main)/_components/vocabulary/WordFilters';
 import { WordQuery } from '@/types/word';
 
 export default function VocabularyPage() {

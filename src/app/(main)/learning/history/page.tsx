@@ -1,19 +1,19 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useLearningHistory } from '../../_hooks/useLearningHistory';
-import { LearningHistoryList } from '../../_components/LearningHistoryList';
-import { LearningHistoryFilters } from '../../_components/LearningHistoryFilters';
+import { useLearningHistory } from '@/app/(main)/_hooks/useLearningHistory';
+import { LearningHistoryList } from '@/app/(main)/_components/history/LearningHistoryList';
+import { LearningHistoryFilters } from '@/app/(main)/_components/history/LearningHistoryFilters';
 import type { LearningActivityType } from '@/types/learning-history';
 
 export default function LearningHistoryPage() {
   const searchParams = useSearchParams();
-  
+
   const rawType = searchParams.get('type');
   const typeParam = rawType as LearningActivityType | 'ALL' | null;
   const isValidType = typeParam === 'VOCABULARY' || typeParam === 'FLASHCARD' || typeParam === 'QUIZ';
   const type = isValidType ? typeParam : undefined;
-  
+
   const pageParam = searchParams.get('page');
   const page = pageParam ? parseInt(pageParam, 10) : 1;
   const validPage = isNaN(page) || page < 1 ? 1 : page;
@@ -42,7 +42,7 @@ export default function LearningHistoryPage() {
         </div>
 
         <div className="mt-8 animate-in fade-in duration-1000 delay-150">
-          <LearningHistoryList 
+          <LearningHistoryList
             data={data}
             isLoading={isLoading}
             isError={isError}

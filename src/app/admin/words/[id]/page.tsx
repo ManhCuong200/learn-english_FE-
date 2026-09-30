@@ -1,15 +1,15 @@
 'use client';
 
 import { use } from 'react';
-import { useWord } from '../../_hooks/useWord';
-import { useExamples } from '../../_hooks/useExamples';
+import { useWord } from '@/app/admin/_hooks/useWord';
+import { useExamples } from '@/app/admin/_hooks/useExamples';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Volume2, Target, Layers, LayoutTemplate } from 'lucide-react';
 import Link from 'next/link';
-import { ExampleList } from '../../_components/ExampleList';
-import { CreateExampleDialog } from '../../_components/CreateExampleDialog';
+import { ExampleList } from '@/app/admin/_components/examples/ExampleList';
+import { CreateExampleDialog } from '@/app/admin/_components/examples/CreateExampleDialog';
 
 type Props = {
   params: Promise<{ id: string }>;

@@ -1,10 +1,10 @@
 'use client';
 
-import { ProgressOverview } from '../../_components/ProgressOverview';
-import { ProgressActivityChart } from '../../_components/ProgressActivityChart';
-import { VocabularyProgress } from '../../_components/VocabularyProgress';
-import { FlashcardProgress } from '../../_components/FlashcardProgress';
-import { QuizProgress } from '../../_components/QuizProgress';
+import { ProgressOverview } from '@/app/(main)/_components/progress/ProgressOverview';
+import { ProgressActivityChart } from '@/app/(main)/_components/progress/ProgressActivityChart';
+import { VocabularyProgress } from '@/app/(main)/_components/vocabulary/VocabularyProgress';
+import { FlashcardProgress } from '@/app/(main)/_components/flashcards/FlashcardProgress';
+import { QuizProgress } from '@/app/(main)/_components/quizzes/QuizProgress';
 import { TrendingUp } from 'lucide-react';
 
 export default function ProgressPage() {

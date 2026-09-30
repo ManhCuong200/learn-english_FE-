@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminLogout } from '@/app/admin/_hooks/useAdminAuth';
 import { useAdminQuiz } from '@/app/admin/_hooks/useAdminQuiz';
-import { QuizForm } from '@/app/admin/_components/QuizForm';
+import { QuizForm } from '@/app/admin/_components/quizzes/QuizForm';
 
 type EditQuizPageProps = {
   params: Promise<{
