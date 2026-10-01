@@ -1,14 +1,20 @@
 'use client';
 
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useWords } from '@/app/admin/_hooks/useWords';
 import { WordList } from '@/app/admin/_components/words/WordList';
 import { WordFilters } from '@/app/admin/_components/words/WordFilters';
 import { CreateWordDialog } from '@/app/admin/_components/words/CreateWordDialog';
+import { PdfExtractModal } from '@/app/admin/_components/words/PdfExtractModal';
+import { Button } from '@/components/ui/button';
 import { WordQuery } from '@/types/word';
-import { BookA } from 'lucide-react';
+import { BookA, Sparkles, FileText } from 'lucide-react';
 
 export default function AdminWordsPage() {
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
   const query: WordQuery = {
@@ -37,11 +43,27 @@ export default function AdminWordsPage() {
               </p>
             </div>
           </div>
-          <div className="shrink-0 mt-4 sm:mt-0">
+          <div className="shrink-0 mt-4 sm:mt-0 flex items-center gap-3 flex-wrap">
+            <Button
+              onClick={() => setIsPdfModalOpen(true)}
+              className="rounded-xl gap-2 font-semibold shadow-md bg-gradient-to-r from-primary to-primary/90 text-primary-foreground"
+            >
+              <Sparkles className="size-4" />
+              <FileText className="size-4" />
+              Trích xuất từ PDF (AI)
+            </Button>
             <CreateWordDialog />
           </div>
         </div>
       </div>
+
+      <PdfExtractModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        onSuccess={() => {
+          queryClient.invalidateQueries();
+        }}
+      />
 
       {/* Main Content Area */}
       <div className="flex flex-col gap-6">

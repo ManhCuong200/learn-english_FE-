@@ -69,3 +69,29 @@ export const bulkCrawlWords = async (data: { words: string[]; categoryId: string
     body: data,
   });
 };
+
+export const extractWordsFromPdf = async (data: {
+  base64: string;
+  fileName?: string;
+}) => {
+  return apiFetch<import('@/types/word-ai').ExtractPdfResponse>(
+    '/words/ai/extract-pdf',
+    {
+      method: 'POST',
+      body: data,
+    },
+  );
+};
+
+export const importExtractedWords = async (data: {
+  categories: import('@/types/word-ai').ExtractedCategoryItem[];
+}) => {
+  return apiFetch<import('@/types/word-ai').ImportExtractedResponse>(
+    '/words/ai/import-extracted',
+    {
+      method: 'POST',
+      body: data,
+    },
+  );
+};
+
