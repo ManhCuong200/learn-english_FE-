@@ -1,17 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, ArrowLeft, Loader2, Save, Sparkles } from 'lucide-react';
+import {
+  Sparkles,
+  PenLine,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Trash2,
+  Save,
+  Loader2,
+  CheckSquare,
+  Square,
+  AlertCircle,
+  ExternalLink,
+  Layers,
+  HelpCircle,
+  RotateCcw,
+  BookOpen,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -20,26 +39,38 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 import { useCategories } from '@/app/admin/_hooks/useCategories';
+import { useWords } from '@/app/admin/_hooks/useWords';
 import { useCreateQuiz } from '@/app/admin/_hooks/useCreateQuiz';
 import { useUpdateQuiz } from '@/app/admin/_hooks/useUpdateQuiz';
 import { useCreateQuizQuestion } from '@/app/admin/_hooks/useCreateQuizQuestion';
 import { useUpdateQuizQuestion } from '@/app/admin/_hooks/useUpdateQuizQuestion';
 import { useDeleteQuizQuestion } from '@/app/admin/_hooks/useDeleteQuizQuestion';
+import { useGenerateQuizQuestions } from '@/app/admin/_hooks/useGenerateQuizQuestions';
 
 import { quizInfoSchema, type QuizInfoFormValues } from '@/validations/quiz';
 import type { AdminQuiz, AdminQuizQuestion, QuizQuestionType } from '@/types/quiz';
-import { QuizQuestionCard, type QuestionDraft } from '@/app/admin/_components/quizzes/QuizQuestionCard';
-import { QuizAiGenerator } from '@/app/admin/_components/quiz-ai/QuizAiGenerator';
+import type { DraftAiQuestion } from '@/types/quiz-ai';
+import type { Word } from '@/types/word';
+import { QuizAiQuestionCard } from '@/app/admin/_components/quiz-ai/QuizAiQuestionCard';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const QUESTION_TYPES: { label: string; value: QuizQuestionType }[] = [
+  { label: 'Meaning (Định nghĩa)', value: 'MEANING' },
+  { label: 'Fill in Blank (Điền từ)', value: 'FILL_BLANK' },
+  { label: 'Translation (Dịch nghĩa)', value: 'TRANSLATION' },
+];
 
 type QuizFormProps = {
   initialQuiz?: AdminQuiz;
@@ -47,22 +78,29 @@ type QuizFormProps = {
 };
 
 export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
-  const router = useRouter();
   const { data: categories = [] } = useCategories();
+  const { data: words = [] } = useWords();
 
   const createQuizMutation = useCreateQuiz();
   const updateQuizMutation = useUpdateQuiz();
   const createQuestionMutation = useCreateQuizQuestion();
   const updateQuestionMutation = useUpdateQuizQuestion();
   const deleteQuestionMutation = useDeleteQuizQuestion();
+  const generateAiMutation = useGenerateQuizQuestions();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  // Workflow Stages:
+  // 'builder' (Quiz Creation: Manual/AI -> Question Drafts)
+  // 'review' (Final Review of Selected Drafts)
+  // 'published' (Quiz + Questions Saved & Published)
+  const [currentStage, setCurrentStage] = useState<'builder' | 'review' | 'published'>('builder');
+  const [publishedQuiz, setPublishedQuiz] = useState<{ id: string; title: string; totalQuestions: number } | null>(null);
+
+  // Active channel for adding questions: 'ai' | 'manual'
+  const [activeChannel, setActiveChannel] = useState<'ai' | 'manual'>('ai');
 
   // Form for Quiz Information
   const {
     register,
-    handleSubmit,
     setValue,
     control,
     formState: { errors },
@@ -78,154 +116,276 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
 
   const selectedCategoryId = useWatch({ control, name: 'categoryId' }) || '';
   const selectedLevel = useWatch({ control, name: 'level' }) || '';
+  const quizTitle = useWatch({ control, name: 'title' }) || '';
+  const quizDescription = useWatch({ control, name: 'description' }) || '';
 
-  // State for Questions List
-  const [questions, setQuestions] = useState<QuestionDraft[]>(() => {
+  // AI Generator Panel State
+  const [aiCount, setAiCount] = useState<number>(5);
+  const [aiSelectedTypes, setAiSelectedTypes] = useState<QuizQuestionType[]>([
+    'MEANING',
+    'FILL_BLANK',
+  ]);
+
+  // Manual Question Entry Form State
+  const [manualWordId, setManualWordId] = useState<string>('');
+  const [manualType, setManualType] = useState<QuizQuestionType>('MEANING');
+  const [manualQuestionText, setManualQuestionText] = useState<string>('');
+  const [manualOptions, setManualOptions] = useState<[string, string, string, string]>([
+    '',
+    '',
+    '',
+    '',
+  ]);
+  const [manualCorrectIndex, setManualCorrectIndex] = useState<number>(0);
+
+  // Central Hub: QUESTION DRAFTS State
+  const [draftQuestions, setDraftQuestions] = useState<DraftAiQuestion[]>(() => {
     if (initialQuiz?.questions && initialQuiz.questions.length > 0) {
       return initialQuiz.questions.map((q: AdminQuizQuestion) => ({
-        tempId: q.id,
         id: q.id,
         wordId: q.wordId,
         question: q.question,
         type: q.type,
-        options: (q.options.length === 4
-          ? q.options
-          : ['', '', '', '']) as [string, string, string, string],
+        options: q.options.length === 4 ? q.options : [q.options[0] || '', '', '', ''],
         correctAnswer: q.correctAnswer,
+        selected: true,
+        source: 'manual',
       }));
     }
-    return [
-      {
-        tempId: 'temp-' + Date.now(),
-        wordId: '',
-        question: '',
-        type: 'MEANING' as QuizQuestionType,
-        options: ['', '', '', ''],
-        correctAnswer: '',
-      },
-    ];
+    return [];
   });
 
   // Track deleted question IDs in edit mode
   const [deletedQuestionIds, setDeletedQuestionIds] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddQuestion = () => {
-    setQuestions((prev) => [
-      ...prev,
-      {
-        tempId: 'temp-' + Date.now() + '-' + Math.random(),
-        wordId: '',
-        question: '',
-        type: 'MEANING' as QuizQuestionType,
-        options: ['', '', '', ''],
-        correctAnswer: '',
-      },
-    ]);
+  // Selected questions count & validation
+  const selectedDrafts = useMemo(
+    () => draftQuestions.filter((q) => q.selected),
+    [draftQuestions],
+  );
+
+  const isAllSelected =
+    draftQuestions.length > 0 && selectedDrafts.length === draftQuestions.length;
+
+  const validDraftsCount = useMemo(() => {
+    return draftQuestions.filter((q) => {
+      const trimmed = q.options.map((o) => o.trim());
+      const hasWord = Boolean(q.wordId);
+      const hasText = Boolean(q.question.trim());
+      const has4Unique =
+        !trimmed.some((o) => !o) && new Set(trimmed.map((o) => o.toLowerCase())).size === 4;
+      const validCorrect =
+        Boolean(q.correctAnswer.trim()) &&
+        trimmed.some((o) => o.toLowerCase() === q.correctAnswer.trim().toLowerCase());
+      return hasWord && hasText && has4Unique && validCorrect;
+    }).length;
+  }, [draftQuestions]);
+
+  // Handle toggling select all
+  const handleToggleSelectAll = () => {
+    const nextState = !isAllSelected;
+    setDraftQuestions((prev) => prev.map((q) => ({ ...q, selected: nextState })));
   };
 
-  const handleQuestionChange = (index: number, updated: QuestionDraft) => {
-    setQuestions((prev) => {
+  // Handle AI Question Generation
+  const handleGenerateAi = async () => {
+    if (aiSelectedTypes.length === 0) {
+      toast.error('Please select at least one question type for AI generation.');
+      return;
+    }
+
+    try {
+      const response = await generateAiMutation.mutateAsync({
+        categoryId: selectedCategoryId || undefined,
+        level: selectedLevel || undefined,
+        count: aiCount,
+        types: aiSelectedTypes,
+      });
+
+      if (response?.questions && response.questions.length > 0) {
+        const formattedNewDrafts: DraftAiQuestion[] = response.questions.map((q, idx) => ({
+          ...q,
+          id: `ai-draft-${Date.now()}-${idx}-${Math.random()}`,
+          selected: true,
+          source: 'ai',
+        }));
+
+        setDraftQuestions((prev) => [...prev, ...formattedNewDrafts]);
+        toast.success(`Added ${formattedNewDrafts.length} AI generated questions to drafts!`);
+      }
+    } catch {
+      // Handled in mutation hook toast
+    }
+  };
+
+  // Handle Manual Question Add
+  const handleAddManualQuestion = () => {
+    if (!manualWordId) {
+      toast.error('Please select a vocabulary word for the manual question.');
+      return;
+    }
+    if (!manualQuestionText.trim()) {
+      toast.error('Please enter the question text.');
+      return;
+    }
+    const trimmedOpts = manualOptions.map((o) => o.trim());
+    if (trimmedOpts.some((o) => !o)) {
+      toast.error('Please fill in all 4 options.');
+      return;
+    }
+    const uniqueOpts = new Set(trimmedOpts.map((o) => o.toLowerCase()));
+    if (uniqueOpts.size !== 4) {
+      toast.error('All 4 options must be distinct choices.');
+      return;
+    }
+
+    const selectedCorrect = trimmedOpts[manualCorrectIndex] || trimmedOpts[0];
+
+    const newManualDraft: DraftAiQuestion = {
+      id: `manual-draft-${Date.now()}-${Math.random()}`,
+      wordId: manualWordId,
+      question: manualQuestionText.trim(),
+      type: manualType,
+      options: trimmedOpts,
+      correctAnswer: selectedCorrect,
+      selected: true,
+      source: 'manual',
+    };
+
+    setDraftQuestions((prev) => [...prev, newManualDraft]);
+    // Reset manual form
+    setManualQuestionText('');
+    setManualOptions(['', '', '', '']);
+    setManualCorrectIndex(0);
+    toast.success('Manual question added to drafts!');
+  };
+
+  // Handle Draft Question Update
+  const handleUpdateDraft = (index: number, updated: DraftAiQuestion) => {
+    setDraftQuestions((prev) => {
       const copy = [...prev];
       copy[index] = updated;
       return copy;
     });
   };
 
-  const handleRemoveQuestion = (index: number) => {
-    const qToRemove = questions[index];
-    if (qToRemove.id) {
-      setDeletedQuestionIds((prev) => [...prev, qToRemove.id!]);
+  // Handle Draft Question Removal
+  const handleRemoveDraft = (index: number) => {
+    const qToRemove = draftQuestions[index];
+    if (qToRemove && qToRemove.id && !qToRemove.id.startsWith('ai-draft-') && !qToRemove.id.startsWith('manual-draft-')) {
+      setDeletedQuestionIds((prev) => [...prev, qToRemove.id]);
     }
-    setQuestions((prev) => prev.filter((_, i) => i !== index));
+    setDraftQuestions((prev) => prev.filter((_, i) => i !== index));
+    toast.info(`Question ${index + 1} removed from drafts.`);
   };
 
-  // Validate Questions list
-  const validateQuestions = (): boolean => {
-    if (questions.length === 0) {
-      toast.error('Quiz must have at least 1 question.');
+  // Handle Remove Selected Drafts
+  const handleRemoveSelectedDrafts = () => {
+    const remaining: DraftAiQuestion[] = [];
+    for (const q of draftQuestions) {
+      if (q.selected) {
+        if (q.id && !q.id.startsWith('ai-draft-') && !q.id.startsWith('manual-draft-')) {
+          setDeletedQuestionIds((prev) => [...prev, q.id]);
+        }
+      } else {
+        remaining.push(q);
+      }
+    }
+    setDraftQuestions(remaining);
+    toast.success(`Removed selected questions from drafts.`);
+  };
+
+  // Validate drafts before proceeding to Final Review
+  const validateBeforeReview = (): boolean => {
+    if (!quizTitle.trim()) {
+      toast.error('Please enter a Quiz Title first.');
       return false;
     }
 
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
+    if (selectedDrafts.length === 0) {
+      toast.error('Please select at least 1 question draft to include in the quiz.');
+      return false;
+    }
+
+    for (let i = 0; i < selectedDrafts.length; i++) {
+      const q = selectedDrafts[i];
       if (!q.wordId) {
-        toast.error(`Question ${i + 1}: Please select a vocabulary word.`);
+        toast.error(`Question ${i + 1}: Vocabulary word reference is required.`);
         return false;
       }
-      if (!q.question.trim() || q.question.trim().length < 2) {
-        toast.error(`Question ${i + 1}: Please enter a valid question text.`);
+      if (!q.question.trim()) {
+        toast.error(`Question ${i + 1}: Question text cannot be empty.`);
         return false;
       }
-      const trimmedOptions = q.options.map((o) => o.trim());
-      if (trimmedOptions.some((o) => !o)) {
+      const trimmed = q.options.map((o) => o.trim());
+      if (trimmed.some((o) => !o)) {
         toast.error(`Question ${i + 1}: All 4 options are required.`);
         return false;
       }
-      const uniqueOptions = new Set(trimmedOptions.map((o) => o.toLowerCase()));
-      if (uniqueOptions.size !== 4) {
+      if (new Set(trimmed.map((o) => o.toLowerCase())).size !== 4) {
         toast.error(`Question ${i + 1}: All 4 options must be unique.`);
         return false;
       }
-      if (!q.correctAnswer.trim()) {
-        toast.error(`Question ${i + 1}: Please select the correct answer.`);
-        return false;
-      }
-      if (
-        !trimmedOptions.some(
-          (o) => o.toLowerCase() === q.correctAnswer.trim().toLowerCase(),
-        )
-      ) {
-        toast.error(
-          `Question ${i + 1}: Correct answer must exist in the 4 options.`,
-        );
+      if (!q.correctAnswer.trim() || !trimmed.some((o) => o.toLowerCase() === q.correctAnswer.trim().toLowerCase())) {
+        toast.error(`Question ${i + 1}: Correct answer must match one of the options.`);
         return false;
       }
     }
+
     return true;
   };
 
-  const onSubmitForm = async (data: QuizInfoFormValues) => {
-    if (!validateQuestions()) return;
+  // Proceed to Final Review
+  const handleProceedToReview = () => {
+    if (validateBeforeReview()) {
+      setCurrentStage('review');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Submit and Save Quiz Atomically
+  const handleSaveAndPublishQuiz = async () => {
+    if (!validateBeforeReview()) return;
 
     setIsSubmitting(true);
-
     try {
       if (mode === 'create') {
-        // Step 1: Create Quiz
-        const newQuiz = await createQuizMutation.mutateAsync({
-          title: data.title,
-          description: data.description || null,
-          categoryId: data.categoryId || null,
-          level: data.level || null,
+        // Atomic Create Quiz + Questions
+        const questionsPayload = selectedDrafts.map((q) => ({
+          wordId: q.wordId,
+          question: q.question.trim(),
+          type: q.type,
+          options: q.options.map((o) => o.trim()),
+          correctAnswer: q.correctAnswer.trim(),
+        }));
+
+        const created = await createQuizMutation.mutateAsync({
+          title: quizTitle.trim(),
+          description: quizDescription.trim() || null,
+          categoryId: selectedCategoryId || null,
+          level: selectedLevel || null,
+          questions: questionsPayload,
         });
 
-        // Step 2: Create Questions
-        for (const q of questions) {
-          await createQuestionMutation.mutateAsync({
-            quizId: newQuiz.id,
-            data: {
-              wordId: q.wordId,
-              question: q.question,
-              type: q.type,
-              options: q.options.map((o) => o.trim()),
-              correctAnswer: q.correctAnswer.trim(),
-            },
-          });
-        }
-
-        toast.success('Quiz created successfully!');
-        router.push('/admin/quizzes');
+        setPublishedQuiz({
+          id: created.id,
+          title: created.title,
+          totalQuestions: created.totalQuestions || questionsPayload.length,
+        });
+        setCurrentStage('published');
+        toast.success('Quiz and all questions published successfully!');
       } else if (mode === 'edit' && initialQuiz) {
         const quizId = initialQuiz.id;
 
-        // Step 1: Update Quiz Info
+        // Step 1: Update Quiz metadata
         await updateQuizMutation.mutateAsync({
           id: quizId,
           data: {
-            title: data.title,
-            description: data.description || null,
-            categoryId: data.categoryId || null,
-            level: data.level || null,
+            title: quizTitle.trim(),
+            description: quizDescription.trim() || null,
+            categoryId: selectedCategoryId || null,
+            level: selectedLevel || null,
           },
         });
 
@@ -234,28 +394,27 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
           await deleteQuestionMutation.mutateAsync({ questionId, quizId });
         }
 
-        // Step 3: Update existing & create new questions
-        for (const q of questions) {
-          if (q.id) {
-            // Existing Question -> PATCH
+        // Step 3: Upsert selected questions
+        for (const q of selectedDrafts) {
+          const isExisting = q.id && !q.id.startsWith('ai-draft-') && !q.id.startsWith('manual-draft-');
+          if (isExisting) {
             await updateQuestionMutation.mutateAsync({
               questionId: q.id,
               quizId,
               data: {
                 wordId: q.wordId,
-                question: q.question,
+                question: q.question.trim(),
                 type: q.type,
                 options: q.options.map((o) => o.trim()),
                 correctAnswer: q.correctAnswer.trim(),
               },
             });
           } else {
-            // New Question -> POST
             await createQuestionMutation.mutateAsync({
               quizId,
               data: {
                 wordId: q.wordId,
-                question: q.question,
+                question: q.question.trim(),
                 type: q.type,
                 options: q.options.map((o) => o.trim()),
                 correctAnswer: q.correctAnswer.trim(),
@@ -264,136 +423,412 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
           }
         }
 
-        toast.success('Quiz updated successfully!');
-        router.push('/admin/quizzes');
+        setPublishedQuiz({
+          id: quizId,
+          title: quizTitle.trim(),
+          totalQuestions: selectedDrafts.length,
+        });
+        setCurrentStage('published');
+        toast.success('Quiz updated and published successfully!');
       }
     } catch {
-      // Errors handled in mutations / toasts
+      // Handled in mutation hook toast
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-8 pb-12">
-      {/* Header Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
-        <div>
+  // Reset form to create another quiz
+  const handleCreateAnother = () => {
+    setValue('title', '');
+    setValue('description', '');
+    setValue('categoryId', '');
+    setValue('level', '');
+    setDraftQuestions([]);
+    setDeletedQuestionIds([]);
+    setPublishedQuiz(null);
+    setCurrentStage('builder');
+  };
+
+  // ==========================================
+  // STAGE 3: PUBLISHED SCREEN
+  // ==========================================
+  if (currentStage === 'published' && publishedQuiz) {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-300">
+        <Card className="border-border bg-card shadow-lg overflow-hidden">
+          <div className="h-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-primary" />
+          <CardContent className="pt-10 pb-12 px-6 sm:px-12 text-center space-y-6">
+            <div className="mx-auto size-20 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center ring-8 ring-emerald-500/10 shadow-inner">
+              <CheckCircle2 className="size-10" />
+            </div>
+
+            <div className="space-y-2 max-w-lg mx-auto">
+              <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1">
+                PUBLISHED
+              </Badge>
+              <h2 className="text-3xl font-extrabold text-foreground tracking-tight font-display">
+                Quiz Published Successfully!
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                &ldquo;{publishedQuiz.title}&rdquo; has been saved with{' '}
+                <strong className="text-foreground">{publishedQuiz.totalQuestions} questions</strong> and is now live for learners.
+              </p>
+            </div>
+
+            <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+              <Link href={`/learning/quiz/${publishedQuiz.id}`} target="_blank">
+                <Button size="lg" className="rounded-xl gap-2 font-semibold shadow-md">
+                  <BookOpen className="size-4" /> Try Quiz as Learner <ExternalLink className="size-3.5 opacity-70" />
+                </Button>
+              </Link>
+              <Link href="/admin/quizzes">
+                <Button variant="outline" size="lg" className="rounded-xl font-semibold">
+                  Back to Quizzes List
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="lg"
+                onClick={handleCreateAnother}
+                className="rounded-xl gap-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <RotateCcw className="size-4" /> Create Another Quiz
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // STAGE 2: FINAL REVIEW SCREEN
+  // ==========================================
+  if (currentStage === 'review') {
+    const selectedCategoryName = categories.find((c) => c.id === selectedCategoryId)?.name;
+
+    return (
+      <div className="space-y-8 animate-in fade-in duration-300">
+        {/* Step Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
+          <div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentStage('builder')}
+              className="gap-2 mb-1 -ml-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" /> Back to Question Drafts
+            </Button>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
+              <Layers className="size-6 text-primary" /> Final Review & Verification
+            </h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Verify your quiz details and inspect how each question will be presented to learners before publishing.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCurrentStage('builder')}
+            >
+              Edit Drafts
+            </Button>
+            <Button
+              type="button"
+              size="lg"
+              disabled={isSubmitting}
+              onClick={handleSaveAndPublishQuiz}
+              className="gap-2 font-semibold shadow-md bg-gradient-to-r from-primary to-primary/90 text-primary-foreground"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" /> Saving Quiz...
+                </>
+              ) : (
+                <>
+                  <Save className="size-4" /> Save & Publish Quiz
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Quiz Metadata Summary Card */}
+        <Card className="border-border bg-card shadow-sm">
+          <CardHeader className="pb-4 border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-bold text-foreground">
+                  {quizTitle}
+                </CardTitle>
+                {quizDescription && (
+                  <CardDescription className="mt-1 text-sm">
+                    {quizDescription}
+                  </CardDescription>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedCategoryName && (
+                  <Badge variant="secondary" className="font-semibold text-xs">
+                    {selectedCategoryName}
+                  </Badge>
+                )}
+                {selectedLevel && (
+                  <Badge variant="outline" className="font-bold text-xs">
+                    Level {selectedLevel}
+                  </Badge>
+                )}
+                <Badge className="bg-primary/10 text-primary border-primary/20 font-bold text-xs">
+                  {selectedDrafts.length} Questions
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div className="rounded-lg bg-muted/30 p-3 border border-border/50">
+                <span className="text-xs text-muted-foreground uppercase font-semibold block">Total Selected</span>
+                <span className="text-2xl font-bold text-foreground">{selectedDrafts.length}</span>
+              </div>
+              <div className="rounded-lg bg-muted/30 p-3 border border-border/50">
+                <span className="text-xs text-muted-foreground uppercase font-semibold block">Meaning Questions</span>
+                <span className="text-2xl font-bold text-primary">
+                  {selectedDrafts.filter((q) => q.type === 'MEANING').length}
+                </span>
+              </div>
+              <div className="rounded-lg bg-muted/30 p-3 border border-border/50">
+                <span className="text-xs text-muted-foreground uppercase font-semibold block">Fill in Blank</span>
+                <span className="text-2xl font-bold text-primary">
+                  {selectedDrafts.filter((q) => q.type === 'FILL_BLANK').length}
+                </span>
+              </div>
+              <div className="rounded-lg bg-muted/30 p-3 border border-border/50">
+                <span className="text-xs text-muted-foreground uppercase font-semibold block">Translation</span>
+                <span className="text-2xl font-bold text-primary">
+                  {selectedDrafts.filter((q) => q.type === 'TRANSLATION').length}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Selected Questions Simulation Preview */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <CheckCircle2 className="size-5 text-emerald-500" /> Learner Experience Preview
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              Showing {selectedDrafts.length} questions in order
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            {selectedDrafts.map((q, idx) => {
+              const targetWord = words.find((w: Word) => w.id === q.wordId);
+              return (
+                <Card key={q.id || idx} className="border-border bg-card shadow-sm hover:border-primary/30 transition-all">
+                  <CardHeader className="py-3 px-6 border-b bg-muted/10 flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <span className="size-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <Badge variant="secondary" className="text-xs font-semibold">
+                        {q.type}
+                      </Badge>
+                      {targetWord && (
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          Word: <strong className="text-foreground">{targetWord.word}</strong> ({targetWord.meaning})
+                        </span>
+                      )}
+                    </div>
+                    {q.source === 'ai' ? (
+                      <Badge variant="outline" className="text-[11px] gap-1 border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/5">
+                        <Sparkles className="size-3" /> AI
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[11px] gap-1 border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5">
+                        <PenLine className="size-3" /> Manual
+                      </Badge>
+                    )}
+                  </CardHeader>
+                  <CardContent className="pt-4 px-6 space-y-4">
+                    <p className="font-semibold text-base text-foreground">
+                      {q.question}
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {q.options.map((opt, optIdx) => {
+                        const isCorrect = opt.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase();
+                        return (
+                          <div
+                            key={optIdx}
+                            className={`p-3 rounded-xl border text-sm flex items-center justify-between font-medium transition-all ${
+                              isCorrect
+                                ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-950 dark:text-emerald-200 ring-1 ring-emerald-500/30 font-bold'
+                                : 'border-border/70 bg-muted/20 text-muted-foreground'
+                            }`}
+                          >
+                            <span>{opt}</span>
+                            {isCorrect && (
+                              <Badge className="bg-emerald-500 text-white text-[10px] font-bold py-0.5">
+                                CORRECT
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom Actions Bar */}
+        <div className="sticky bottom-4 z-20 rounded-2xl border border-border bg-card/95 backdrop-blur-md p-4 shadow-xl flex items-center justify-between">
           <Button
             type="button"
             variant="ghost"
-            size="sm"
-            onClick={() => router.push('/admin/quizzes')}
-            className="mb-2 text-muted-foreground hover:text-foreground"
+            onClick={() => setCurrentStage('builder')}
+            className="gap-2 text-muted-foreground"
           >
-            <ArrowLeft className="mr-2 size-4" /> Back to Quizzes
+            <ArrowLeft className="size-4" /> Back to Drafts
           </Button>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">
-            {mode === 'create' ? 'Create New Quiz' : `Edit Quiz: ${initialQuiz?.title}`}
-          </h1>
-        </div>
 
-        <div className="flex items-center gap-3">
           <Button
             type="button"
-            variant="outline"
-            onClick={() => router.push('/admin/quizzes')}
+            size="lg"
             disabled={isSubmitting}
+            onClick={handleSaveAndPublishQuiz}
+            className="gap-2 font-bold px-8 shadow-lg bg-gradient-to-r from-primary to-primary/90 text-primary-foreground hover:opacity-95"
           >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting} className="min-w-[140px]">
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                {mode === 'create' ? 'Creating...' : 'Updating...'}
+                <Loader2 className="size-4 animate-spin" /> Saving & Publishing...
               </>
             ) : (
               <>
-                <Save className="mr-2 size-4" />
-                {mode === 'create' ? 'Create Quiz' : 'Save Changes'}
+                <Save className="size-4" /> Save & Publish Quiz ({selectedDrafts.length} Questions)
               </>
             )}
           </Button>
         </div>
       </div>
+    );
+  }
 
-      {/* SECTION 1: QUIZ INFORMATION */}
-      <Card className="border-border shadow-sm">
-        <CardHeader className="border-b bg-muted/40">
-          <CardTitle className="text-lg font-bold">1. Quiz Information</CardTitle>
+  // ==========================================
+  // STAGE 1: BUILDER SCREEN (Metadata + Dual Channels + Drafts)
+  // ==========================================
+  return (
+    <div className="space-y-8 animate-in fade-in duration-300">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
+        <div>
+          <Link href="/admin/quizzes">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2 mb-1 -ml-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" /> Back to Quizzes
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground font-display flex items-center gap-2">
+            <HelpCircle className="size-6 text-primary" />
+            {mode === 'create' ? 'Create New Quiz' : `Edit Quiz: ${initialQuiz?.title || ''}`}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Build your assessment using AI generation or manual creation, refine your question drafts, and publish.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            size="lg"
+            onClick={handleProceedToReview}
+            disabled={selectedDrafts.length === 0}
+            className="gap-2 font-semibold shadow-md bg-primary text-primary-foreground"
+          >
+            Proceed to Final Review ({selectedDrafts.length}) <ArrowRight className="size-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Section 1: Quiz Information Card */}
+      <Card className="border-border bg-card shadow-sm">
+        <CardHeader className="pb-4 border-b">
+          <CardTitle className="text-base font-bold text-foreground">
+            Quiz Details
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Configure title, category, and target CEFR level for this quiz.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 pt-6">
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="title" className="font-semibold">
-              Title <span className="text-destructive">*</span>
+        <CardContent className="pt-5 space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="quiz-title" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Quiz Title <span className="text-destructive">*</span>
             </Label>
             <Input
-              id="title"
-              placeholder="e.g., Basic Business Vocabulary B1"
+              id="quiz-title"
+              placeholder="e.g. Master Essential Business Vocabulary"
               {...register('title')}
+              className={errors.title ? 'border-destructive' : ''}
             />
             {errors.title && (
               <p className="text-xs text-destructive">{errors.title.message}</p>
             )}
           </div>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="font-semibold">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Provide a short overview of what this quiz tests..."
-              rows={3}
-              {...register('description')}
-            />
-            {errors.description && (
-              <p className="text-xs text-destructive">{errors.description.message}</p>
-            )}
-          </div>
-
-          {/* Category & Level */}
-          <div className="grid gap-6 sm:grid-cols-2">
-            {/* Category */}
-            <div className="space-y-2">
-              <Label htmlFor="categoryId" className="font-semibold">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Category
               </Label>
               <Select
                 value={selectedCategoryId || 'NONE'}
-                onValueChange={(val) => setValue('categoryId', val === 'NONE' ? '' : val)}
+                onValueChange={(val: string | null) =>
+                  setValue('categoryId', !val || val === 'NONE' ? '' : val)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Category (Optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="NONE">None / Uncategorized</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
+                  <SelectItem value="NONE">No Category</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Level */}
-            <div className="space-y-2">
-              <Label htmlFor="level" className="font-semibold">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Level
               </Label>
               <Select
                 value={selectedLevel || 'NONE'}
-                onValueChange={(val) => setValue('level', val === 'NONE' ? '' : val)}
+                onValueChange={(val: string | null) =>
+                  setValue('level', !val || val === 'NONE' ? '' : val)
+                }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Level (Optional)" />
+                  <SelectValue placeholder="Select CEFR Level (Optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="NONE">None</SelectItem>
+                  <SelectItem value="NONE">Any Level</SelectItem>
                   {LEVELS.map((lvl) => (
                     <SelectItem key={lvl} value={lvl}>
                       {lvl}
@@ -403,115 +838,409 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
               </Select>
             </div>
           </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="quiz-desc" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Description (Optional)
+            </Label>
+            <Textarea
+              id="quiz-desc"
+              rows={2}
+              placeholder="Brief description or instructions for learners taking this quiz..."
+              {...register('description')}
+            />
+          </div>
         </CardContent>
       </Card>
 
-      {/* SECTION 2: QUESTIONS */}
-      <div className="space-y-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-foreground">
-              2. Questions ({questions.length})
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Add multiple choice questions manually or generate them automatically using AI Gemini.
-            </p>
-          </div>
+      {/* Section 2: Dual Creation Engine (MANUAL vs AI) */}
+      <Card className="border-border bg-card shadow-sm overflow-hidden">
+        <div className="border-b bg-muted/20 px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-              <DialogTrigger render={
-                <Button
-                  type="button"
-                  variant="default"
-                  className="gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-md"
-                >
-                  <Sparkles className="size-4 animate-pulse" /> Generate with AI
-                </Button>
-              } />
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-                    <Sparkles className="size-5 text-primary" /> AI Quiz Question Generator
-                  </DialogTitle>
-                  <DialogDescription>
-                    Automatically generate high quality vocabulary questions using AI. Review and edit choices before importing into your quiz.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="pt-4">
-                  <QuizAiGenerator
-                    quizId={initialQuiz?.id}
-                    onImportToQuizForm={(aiQuestions) => {
-                      setQuestions((prev) => [...prev, ...aiQuestions]);
-                      setAiDialogOpen(false);
-                      toast.success(`Imported ${aiQuestions.length} AI question(s) into quiz!`);
-                    }}
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Add Questions Channel
+            </span>
+          </div>
 
-            <Button
+          {/* Toggle Pills between AI and Manual */}
+          <div className="inline-flex rounded-xl bg-muted p-1 border border-border/70">
+            <button
               type="button"
-              variant="outline"
-              onClick={handleAddQuestion}
-              className="gap-2 border-dashed"
+              onClick={() => setActiveChannel('ai')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold transition-all ${
+                activeChannel === 'ai'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              <Plus className="size-4" /> Add Question
-            </Button>
+              <Sparkles className="size-3.5 text-primary" /> AI Generator
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveChannel('manual')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold transition-all ${
+                activeChannel === 'manual'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <PenLine className="size-3.5 text-primary" /> Manual Entry
+            </button>
           </div>
         </div>
 
-        {questions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed p-12 text-center">
-            <p className="text-muted-foreground">No questions added yet.</p>
+        <CardContent className="p-6">
+          {/* AI Channel */}
+          {activeChannel === 'ai' && (
+            <div className="space-y-5 animate-in fade-in duration-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <Sparkles className="size-4 text-primary" /> Generate Questions with AI (Gemini)
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Generate multiple-choice questions automatically from your vocabulary bank.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-muted-foreground">Count:</span>
+                  {[3, 5, 10].map((num) => (
+                    <Button
+                      key={num}
+                      type="button"
+                      variant={aiCount === num ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setAiCount(num)}
+                      className="size-8 p-0 text-xs font-bold rounded-lg"
+                    >
+                      {num}
+                    </Button>
+                  ))}
+                  <Input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={aiCount}
+                    onChange={(e) => setAiCount(Math.min(20, Math.max(1, Number(e.target.value) || 1)))}
+                    className="w-16 h-8 text-xs font-bold text-center rounded-lg"
+                  />
+                </div>
+              </div>
+
+              {/* Question Types Checkboxes */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Allowed Question Types
+                </Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {QUESTION_TYPES.map((t) => {
+                    const isChecked = aiSelectedTypes.includes(t.value);
+                    return (
+                      <div
+                        key={t.value}
+                        onClick={() => {
+                          if (isChecked) {
+                            if (aiSelectedTypes.length > 1) {
+                              setAiSelectedTypes(aiSelectedTypes.filter((x) => x !== t.value));
+                            }
+                          } else {
+                            setAiSelectedTypes([...aiSelectedTypes, t.value]);
+                          }
+                        }}
+                        className={`p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all ${
+                          isChecked
+                            ? 'border-primary/50 bg-primary/5 text-foreground font-semibold shadow-sm'
+                            : 'border-border/70 bg-card text-muted-foreground hover:border-border'
+                        }`}
+                      >
+                        <Checkbox checked={isChecked} />
+                        <span className="text-xs">{t.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-xs text-muted-foreground">
+                  Target: {selectedCategoryId ? categories.find((c) => c.id === selectedCategoryId)?.name : 'All Categories'}, Level: {selectedLevel || 'Any'}
+                </span>
+                <Button
+                  type="button"
+                  disabled={generateAiMutation.isPending}
+                  onClick={handleGenerateAi}
+                  className="gap-2 font-bold px-6 shadow-md bg-gradient-to-r from-primary to-primary/90 text-primary-foreground"
+                >
+                  {generateAiMutation.isPending ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> Generating Questions...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="size-4" /> Generate {aiCount} Questions
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Manual Channel */}
+          {activeChannel === 'manual' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <PenLine className="size-4 text-primary" /> Create Manual Question
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Craft a tailored question with 4 options and mark the correct answer.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Target Word <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={manualWordId}
+                    onValueChange={(val: string | null) => setManualWordId(val ?? '')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select target vocabulary..." />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {words.map((w: Word) => (
+                        <SelectItem key={w.id} value={w.id}>
+                          <span className="font-semibold">{w.word}</span>
+                          {w.meaning ? ` — ${w.meaning}` : ''}
+                          {w.level ? ` (${w.level})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Question Type
+                  </Label>
+                  <Select
+                    value={manualType}
+                    onValueChange={(val: string | null) => val && setManualType(val as QuizQuestionType)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {QUESTION_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Question Text <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  value={manualQuestionText}
+                  onChange={(e) => setManualQuestionText(e.target.value)}
+                  placeholder="e.g. What is the meaning of 'elaborate'? OR Complete the sentence: She made an _____ speech."
+                />
+              </div>
+
+              {/* 4 Options Grid */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Options (Radio button marks the correct answer)
+                </Label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {manualOptions.map((opt, optIdx) => (
+                    <div
+                      key={optIdx}
+                      className={`flex items-center gap-2.5 rounded-xl border p-2.5 transition-all ${
+                        manualCorrectIndex === optIdx
+                          ? 'border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/30'
+                          : 'border-border/70 bg-card'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="manual-correct-choice"
+                        id={`manual-opt-radio-${optIdx}`}
+                        checked={manualCorrectIndex === optIdx}
+                        onChange={() => setManualCorrectIndex(optIdx)}
+                        className="size-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                      />
+                      <Input
+                        value={opt}
+                        onChange={(e) => {
+                          const copy: [string, string, string, string] = [...manualOptions];
+                          copy[optIdx] = e.target.value;
+                          setManualOptions(copy);
+                        }}
+                        placeholder={`Option ${optIdx + 1}${manualCorrectIndex === optIdx ? ' (Correct Answer)' : ''}`}
+                        className="h-8 text-xs border-0 bg-transparent focus-visible:ring-0 shadow-none px-1"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="button"
+                  onClick={handleAddManualQuestion}
+                  className="gap-2 font-bold px-6"
+                >
+                  <PenLine className="size-4" /> Add Question to Drafts
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Section 3: QUESTION DRAFTS (Central Hub) */}
+      <div className="space-y-4">
+        {/* Drafts Toolbar & Live Stats */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Layers className="size-5 text-primary" /> Question Drafts
+            </h2>
+            <Badge variant="secondary" className="font-semibold text-xs">
+              {draftQuestions.length} Total
+            </Badge>
+            <Badge
+              variant="outline"
+              className="border-primary/30 text-primary font-semibold text-xs"
+            >
+              {selectedDrafts.length} Selected
+            </Badge>
+            <Badge
+              variant="outline"
+              className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-semibold text-xs"
+            >
+              {validDraftsCount} Valid
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-2">
             <Button
               type="button"
-              variant="secondary"
-              onClick={handleAddQuestion}
-              className="mt-4 gap-2"
+              variant="ghost"
+              size="sm"
+              onClick={handleToggleSelectAll}
+              className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
-              <Plus className="size-4" /> Add First Question
+              {isAllSelected ? (
+                <>
+                  <CheckSquare className="size-3.5" /> Deselect All
+                </>
+              ) : (
+                <>
+                  <Square className="size-3.5" /> Select All
+                </>
+              )}
             </Button>
+
+            {selectedDrafts.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 text-xs text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="size-3.5" /> Remove Selected ({selectedDrafts.length})
+                    </Button>
+                  }
+                />
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove Selected Questions?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to remove {selectedDrafts.length} selected questions from your draft list?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleRemoveSelectedDrafts}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Remove
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        </div>
+
+        {/* Empty State */}
+        {draftQuestions.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border p-12 text-center space-y-3 bg-muted/5">
+            <div className="mx-auto size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+              <Layers className="size-6" />
+            </div>
+            <h3 className="text-base font-bold text-foreground">No Question Drafts Yet</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              Use the AI Generator above to auto-create questions, or use Manual Entry to add your own questions into drafts.
+            </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {questions.map((q, idx) => (
-              <QuizQuestionCard
-                key={q.tempId || q.id || idx}
-                index={idx}
-                question={q}
-                onChange={(updated) => handleQuestionChange(idx, updated)}
-                onDelete={() => handleRemoveQuestion(idx)}
+          /* Draft Cards List */
+          <div className="space-y-4">
+            {draftQuestions.map((question, index) => (
+              <QuizAiQuestionCard
+                key={question.id || index}
+                index={index}
+                question={question}
+                onChange={(updated) => handleUpdateDraft(index, updated)}
+                onDelete={() => handleRemoveDraft(index)}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Bottom Action Bar */}
-      <div className="flex items-center justify-end gap-4 border-t pt-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push('/admin/quizzes')}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSubmitting} size="lg" className="min-w-[160px]">
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 size-5 animate-spin" />
-              {mode === 'create' ? 'Creating...' : 'Updating...'}
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 size-5" />
-              {mode === 'create' ? 'Create Quiz' : 'Save Changes'}
-            </>
-          )}
-        </Button>
-      </div>
-    </form>
+      {/* Floating Bottom Action Bar */}
+      {draftQuestions.length > 0 && (
+        <div className="sticky bottom-4 z-20 rounded-2xl border border-border bg-card/95 backdrop-blur-md p-4 shadow-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-foreground">
+              {selectedDrafts.length} of {draftQuestions.length} questions selected
+            </span>
+            {selectedDrafts.length === 0 && (
+              <span className="text-xs text-destructive flex items-center gap-1">
+                <AlertCircle className="size-3.5" /> Select at least 1 question
+              </span>
+            )}
+          </div>
+
+          <Button
+            type="button"
+            size="lg"
+            disabled={selectedDrafts.length === 0}
+            onClick={handleProceedToReview}
+            className="gap-2 font-bold px-6 shadow-md bg-primary text-primary-foreground hover:opacity-95"
+          >
+            Proceed to Final Review ({selectedDrafts.length}) <ArrowRight className="size-4" />
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };

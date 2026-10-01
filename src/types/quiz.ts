@@ -121,6 +121,7 @@ export interface CreateQuizRequest {
   description?: string | null;
   categoryId?: string | null;
   level?: string | null;
+  questions?: CreateQuizQuestionRequest[];
 }
 
 export interface UpdateQuizRequest {

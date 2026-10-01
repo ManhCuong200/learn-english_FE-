@@ -1,7 +1,14 @@
 'use client';
 
 import React, { memo, useCallback, useMemo } from 'react';
-import { Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Loader2,
+  PenLine,
+} from 'lucide-react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,6 +36,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import { useWords } from '@/app/admin/_hooks/useWords';
+import { useRegenerateQuizQuestion } from '@/app/admin/_hooks/useRegenerateQuizQuestion';
 import type { QuizQuestionType } from '@/types/quiz';
 import type { DraftAiQuestion } from '@/types/quiz-ai';
 import type { Word } from '@/types/word';
@@ -49,12 +57,36 @@ const QUESTION_TYPES: { label: string; value: QuizQuestionType }[] = [
 export const QuizAiQuestionCard = memo(
   ({ index, question, onChange, onDelete }: QuizAiQuestionCardProps) => {
     const { data: words = [] } = useWords();
+    const regenerateMutation = useRegenerateQuizQuestion();
 
     // Memoize target word search
     const targetWord = useMemo(
       () => words.find((w: Word) => w.id === question.wordId),
       [words, question.wordId],
     );
+
+    const handleRegenerate = useCallback(async () => {
+      if (!question.wordId) return;
+      try {
+        const res = await regenerateMutation.mutateAsync({
+          wordId: question.wordId,
+          type: question.type,
+          previousQuestion: question.question,
+        });
+        if (res?.question) {
+          onChange({
+            ...question,
+            question: res.question.question,
+            type: res.question.type,
+            options: res.question.options,
+            correctAnswer: res.question.correctAnswer,
+            source: 'ai',
+          });
+        }
+      } catch {
+        // Handled by mutation toast
+      }
+    }, [question, regenerateMutation, onChange]);
 
     const handleOptionChange = useCallback(
       (optIdx: number, val: string) => {
@@ -78,30 +110,25 @@ export const QuizAiQuestionCard = memo(
     );
 
     // Validation checks for Card border & badge status
-    const { hasEmptyOption, isUnique, hasValidCorrectAnswer, isValid } =
-      useMemo(() => {
-        const trimmed = question.options.map((o) => o.trim());
-        const empty = trimmed.some((o) => !o);
-        const unique = new Set(trimmed.map((o) => o.toLowerCase())).size === 4;
-        const validCorrect =
-          Boolean(question.correctAnswer.trim()) &&
-          trimmed.some(
-            (o) =>
-              o.toLowerCase() === question.correctAnswer.trim().toLowerCase(),
-          );
-        const valid =
-          Boolean(question.question.trim()) &&
-          !empty &&
-          unique &&
-          validCorrect;
+    const { isUnique, isValid } = useMemo(() => {
+      const trimmed = question.options.map((o) => o.trim());
+      const empty = trimmed.some((o) => !o);
+      const unique = new Set(trimmed.map((o) => o.toLowerCase())).size === 4;
+      const validCorrect =
+        Boolean(question.correctAnswer.trim()) &&
+        trimmed.some(
+          (o) =>
+            o.toLowerCase() === question.correctAnswer.trim().toLowerCase(),
+        );
+      const valid =
+        Boolean(question.question.trim()) &&
+        Boolean(question.wordId) &&
+        !empty &&
+        unique &&
+        validCorrect;
 
-        return {
-          hasEmptyOption: empty,
-          isUnique: unique,
-          hasValidCorrectAnswer: validCorrect,
-          isValid: valid,
-        };
-      }, [question.options, question.question, question.correctAnswer]);
+      return { isUnique: unique, isValid: valid };
+    }, [question.options, question.question, question.correctAnswer, question.wordId]);
 
     return (
       <Card
@@ -114,7 +141,7 @@ export const QuizAiQuestionCard = memo(
         }`}
       >
         <CardHeader className="flex flex-row items-center justify-between border-b pb-4 pt-4 px-6 bg-muted/20">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             {/* Select Checkbox */}
             <Checkbox
               id={`select-q-${question.id}`}
@@ -129,6 +156,23 @@ export const QuizAiQuestionCard = memo(
             >
               Question {index + 1}
             </Label>
+
+            {/* Source Badge */}
+            {question.source === 'manual' ? (
+              <Badge
+                variant="outline"
+                className="gap-1 text-xs border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5 font-semibold"
+              >
+                <PenLine className="size-3" /> Manual
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="gap-1 text-xs border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/5 font-semibold"
+              >
+                <Sparkles className="size-3" /> AI
+              </Badge>
+            )}
 
             {/* Type Badge */}
             <Badge variant="secondary" className="font-semibold text-xs">
@@ -150,21 +194,44 @@ export const QuizAiQuestionCard = memo(
             )}
           </div>
 
-          {/* Delete Button */}
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+          <div className="flex items-center gap-2">
+            {/* Regenerate with AI Button */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 transition-colors"
+              disabled={regenerateMutation.isPending || !question.wordId}
+              onClick={handleRegenerate}
+              title={
+                question.wordId
+                  ? 'Regenerate this question with AI'
+                  : 'Select a word first to regenerate with AI'
               }
-            />
-            <AlertDialogContent>
+            >
+              {regenerateMutation.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="size-3.5 text-primary" />
+              )}
+              <span>Regenerate</span>
+            </Button>
+
+            {/* Delete Button */}
+            <AlertDialog>
+              <AlertDialogTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                }
+              />
+              <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Remove Question?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -183,7 +250,8 @@ export const QuizAiQuestionCard = memo(
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </CardHeader>
+        </div>
+      </CardHeader>
 
         <CardContent className="space-y-4 pt-5 px-6">
           {/* Vocabulary Info */}
