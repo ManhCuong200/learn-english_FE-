@@ -260,12 +260,21 @@ export const QuizAiQuestionCard = memo(
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
                 Target Vocabulary
               </span>
-              <span className="font-bold text-foreground">
-                {targetWord ? targetWord.word : `Word ID: ${question.wordId}`}
-              </span>
-              {targetWord?.meaning && (
-                <span className="text-muted-foreground ml-2">
-                  — {targetWord.meaning}
+              {targetWord ? (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="font-bold text-foreground text-base">
+                    {targetWord.word}
+                  </span>
+                  {targetWord.meaning && (
+                    <span className="text-muted-foreground text-xs">
+                      — {targetWord.meaning}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="text-amber-600 dark:text-amber-400 font-medium text-xs mt-0.5 flex items-center gap-1.5">
+                  <AlertCircle className="size-3.5 inline shrink-0" />
+                  Chưa chọn từ vựng mục tiêu (Vui lòng chọn ở mục bên dưới)
                 </span>
               )}
             </div>
@@ -286,7 +295,7 @@ export const QuizAiQuestionCard = memo(
                   val && onChange({ ...question, type: val as QuizQuestionType })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -299,27 +308,58 @@ export const QuizAiQuestionCard = memo(
               </Select>
             </div>
 
-            {/* Word ID Selector (Optional edit) */}
+            {/* Word ID Selector */}
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Vocabulary Word Reference
+                Vocabulary Word Reference <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={question.wordId}
-                onValueChange={(val: string | null) =>
-                  onChange({ ...question, wordId: val ?? '' })
-                }
+                onValueChange={(val: string | null) => {
+                  const chosenWord = words.find((w: Word) => w.id === val);
+                  const isQuestionEmpty = !question.question.trim();
+                  const areOptionsEmpty = question.options.every((o) => !o.trim());
+
+                  onChange({
+                    ...question,
+                    wordId: val ?? '',
+                    question:
+                      isQuestionEmpty && chosenWord
+                        ? `What is the definition of "${chosenWord.word}"?`
+                        : question.question,
+                    options:
+                      areOptionsEmpty && chosenWord?.meaning
+                        ? [chosenWord.meaning, '', '', '']
+                        : question.options,
+                    correctAnswer:
+                      !question.correctAnswer && chosenWord?.meaning
+                        ? chosenWord.meaning
+                        : question.correctAnswer,
+                  });
+                }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select word..." />
+                <SelectTrigger className="w-full">
+                  {targetWord ? (
+                    <span className="truncate flex items-center gap-1.5 text-left">
+                      <span className="font-semibold text-foreground">{targetWord.word}</span>
+                      {targetWord.meaning && (
+                        <span className="text-muted-foreground text-xs">— {targetWord.meaning}</span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground italic">Chọn từ vựng mục tiêu...</span>
+                  )}
                 </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {words.map((w: Word) => (
-                    <SelectItem key={w.id} value={w.id}>
-                      <span className="font-semibold">{w.word}</span>
-                      {w.meaning ? ` — ${w.meaning}` : ''}
-                    </SelectItem>
-                  ))}
+                <SelectContent className="max-h-64">
+                  {[...words]
+                    .sort((a, b) => a.word.localeCompare(b.word))
+                    .map((w: Word) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        <span className="font-semibold">{w.word}</span>
+                        {w.meaning ? ` — ${w.meaning}` : ''}
+                        {w.level ? ` (${w.level})` : ''}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

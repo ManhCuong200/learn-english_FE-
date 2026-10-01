@@ -142,6 +142,11 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
   const [batchWordIds, setBatchWordIds] = useState<string[]>([]);
   const [batchSearch, setBatchSearch] = useState<string>('');
 
+  const selectedManualWord = useMemo(
+    () => words.find((w: Word) => w.id === manualWordId),
+    [words, manualWordId],
+  );
+
   // Central Hub: QUESTION DRAFTS State
   const [draftQuestions, setDraftQuestions] = useState<DraftAiQuestion[]>(() => {
     if (initialQuiz?.questions && initialQuiz.questions.length > 0) {
@@ -267,12 +272,11 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
 
   // Add blank question drafts for quick editing on cards
   const handleAddBlankQuestions = (count = 1) => {
-    const defaultWordId = words[0]?.id || '';
     const newDrafts: DraftAiQuestion[] = [];
     for (let i = 0; i < count; i++) {
       newDrafts.push({
         id: `manual-draft-${Date.now()}-${i}-${Math.random()}`,
-        wordId: defaultWordId,
+        wordId: '',
         question: '',
         type: 'MEANING',
         options: ['', '', '', ''],
@@ -1185,19 +1189,45 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
                       </Label>
                       <Select
                         value={manualWordId}
-                        onValueChange={(val: string | null) => setManualWordId(val ?? '')}
+                        onValueChange={(val: string | null) => {
+                          setManualWordId(val ?? '');
+                          const chosen = words.find((w: Word) => w.id === val);
+                          if (chosen && !manualQuestionText.trim()) {
+                            setManualQuestionText(`What is the definition of "${chosen.word}"?`);
+                            if (chosen.meaning && manualOptions.every((o) => !o.trim())) {
+                              setManualOptions([chosen.meaning, '', '', '']);
+                              setManualCorrectIndex(0);
+                            }
+                          }
+                        }}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select target vocabulary..." />
+                        <SelectTrigger className="w-full">
+                          {selectedManualWord ? (
+                            <span className="truncate flex items-center gap-1.5 text-left">
+                              <span className="font-semibold text-foreground">{selectedManualWord.word}</span>
+                              {selectedManualWord.meaning && (
+                                <span className="text-muted-foreground text-xs">— {selectedManualWord.meaning}</span>
+                              )}
+                              {selectedManualWord.level && (
+                                <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">
+                                  {selectedManualWord.level}
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Select target vocabulary...</span>
+                          )}
                         </SelectTrigger>
                         <SelectContent className="max-h-60">
-                          {words.map((w: Word) => (
-                            <SelectItem key={w.id} value={w.id}>
-                              <span className="font-semibold">{w.word}</span>
-                              {w.meaning ? ` — ${w.meaning}` : ''}
-                              {w.level ? ` (${w.level})` : ''}
-                            </SelectItem>
-                          ))}
+                          {[...words]
+                            .sort((a, b) => a.word.localeCompare(b.word))
+                            .map((w: Word) => (
+                              <SelectItem key={w.id} value={w.id}>
+                                <span className="font-semibold">{w.word}</span>
+                                {w.meaning ? ` — ${w.meaning}` : ''}
+                                {w.level ? ` (${w.level})` : ''}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
