@@ -70,15 +70,24 @@ export const bulkCrawlWords = async (data: { words: string[]; categoryId: string
   });
 };
 
-export const extractWordsFromPdf = async (data: {
-  base64: string;
-  fileName?: string;
-}) => {
+export const extractWordsFromPdf = async (
+  input: File | { base64: string; fileName?: string },
+) => {
+  let body: unknown;
+  if (typeof window !== 'undefined' && input instanceof File) {
+    const formData = new FormData();
+    formData.append('file', input);
+    body = formData;
+  } else {
+    body = input;
+  }
+
   return apiFetch<import('@/types/word-ai').ExtractPdfResponse>(
     '/words/ai/extract-pdf',
     {
       method: 'POST',
-      body: data,
+      body,
+      timeout: 120000,
     },
   );
 };

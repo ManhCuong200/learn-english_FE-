@@ -116,10 +116,7 @@ export const PdfExtractModal = ({
 
     setIsExtracting(true);
     try {
-      const res = await extractWordsFromPdf({
-        base64: fileBase64,
-        fileName: selectedFile.name,
-      });
+      const res = await extractWordsFromPdf(selectedFile);
 
       if (!res.categories || res.categories.length === 0) {
         toast.error('Không tìm thấy danh mục hoặc từ vựng nào trong file PDF');
