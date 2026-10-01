@@ -1,7 +1,7 @@
 'use client';
 
 import { AppSidebar } from '@/components/common/AppSidebar';
-import { LayoutDashboard, HelpCircle, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, HelpCircle, ExternalLink, BookA } from 'lucide-react';
 import { useAdminLogout } from '@/app/admin/_hooks/useAdminAuth';
 import { QuizForm } from '@/app/admin/_components/quizzes/QuizForm';
 
@@ -14,7 +14,8 @@ export default function CreateQuizPage() {
         brand="Eunoia Admin"
         activeHref="/admin/quizzes"
         items={[
-          { label: 'Content dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Category Management', href: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Vocabulary Management', href: '/admin/words', icon: BookA },
           { label: 'Quiz Management', href: '/admin/quizzes', icon: HelpCircle },
           { label: 'View Learner App', href: '/learning', icon: ExternalLink },
         ]}

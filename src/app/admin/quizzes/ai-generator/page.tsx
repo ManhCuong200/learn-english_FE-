@@ -11,6 +11,7 @@ import {
   Sparkles,
   Plus,
   Loader2,
+  BookA,
 } from 'lucide-react';
 import { useAdminLogout } from '@/app/admin/_hooks/useAdminAuth';
 import { useAdminQuizzes } from '@/app/admin/_hooks/useAdminQuizzes';
@@ -92,9 +93,14 @@ export default function AdminAiQuizGeneratorPage() {
         activeHref="/admin/quizzes"
         items={[
           {
-            label: 'Content dashboard',
+            label: 'Category Management',
             href: '/admin/dashboard',
             icon: LayoutDashboard,
+          },
+          {
+            label: 'Vocabulary Management',
+            href: '/admin/words',
+            icon: BookA,
           },
           {
             label: 'Quiz Management',

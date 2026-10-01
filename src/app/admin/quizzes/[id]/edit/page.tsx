@@ -3,7 +3,7 @@
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppSidebar } from '@/components/common/AppSidebar';
-import { LayoutDashboard, HelpCircle, ExternalLink, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, HelpCircle, ExternalLink, ArrowLeft, BookA } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminLogout } from '@/app/admin/_hooks/useAdminAuth';
@@ -29,7 +29,8 @@ export default function EditQuizPage({ params }: EditQuizPageProps) {
         brand="Eunoia Admin"
         activeHref="/admin/quizzes"
         items={[
-          { label: 'Content dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Category Management', href: '/admin/dashboard', icon: LayoutDashboard },
+          { label: 'Vocabulary Management', href: '/admin/words', icon: BookA },
           { label: 'Quiz Management', href: '/admin/quizzes', icon: HelpCircle },
           { label: 'View Learner App', href: '/learning', icon: ExternalLink },
         ]}
