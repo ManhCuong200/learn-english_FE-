@@ -252,12 +252,22 @@ export const PdfExtractModal = ({
 
   // Save / Import to system
   const handleSaveToDatabase = async () => {
-    // Filter selected categories and words
+    // Filter and sanitize selected categories and words
     const payloadCategories = categories
       .map((cat) => ({
         name: cat.name.trim(),
-        description: cat.description,
-        words: cat.words.filter((w) => w.selected),
+        description: cat.description ? cat.description.trim() : undefined,
+        words: cat.words
+          .filter((w) => w.selected)
+          .map((w) => ({
+            word: w.word.trim(),
+            meaning: w.meaning.trim(),
+            ipa: w.ipa ? w.ipa.trim() : undefined,
+            level: w.level ? w.level.trim() : undefined,
+            partOfSpeech: w.partOfSpeech ? w.partOfSpeech.trim() : undefined,
+            example: w.example ? w.example.trim() : undefined,
+            exampleMeaning: w.exampleMeaning ? w.exampleMeaning.trim() : undefined,
+          })),
       }))
       .filter((cat) => cat.words.length > 0);
 
