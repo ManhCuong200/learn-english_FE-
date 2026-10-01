@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  Plus,
   Sparkles,
   PenLine,
   ArrowLeft,
@@ -137,6 +138,9 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
     '',
   ]);
   const [manualCorrectIndex, setManualCorrectIndex] = useState<number>(0);
+  const [manualSubTab, setManualSubTab] = useState<'form' | 'batch'>('form');
+  const [batchWordIds, setBatchWordIds] = useState<string[]>([]);
+  const [batchSearch, setBatchSearch] = useState<string>('');
 
   // Central Hub: QUESTION DRAFTS State
   const [draftQuestions, setDraftQuestions] = useState<DraftAiQuestion[]>(() => {
@@ -259,6 +263,50 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
     setManualOptions(['', '', '', '']);
     setManualCorrectIndex(0);
     toast.success('Manual question added to drafts!');
+  };
+
+  // Add blank question drafts for quick editing on cards
+  const handleAddBlankQuestions = (count = 1) => {
+    const defaultWordId = words[0]?.id || '';
+    const newDrafts: DraftAiQuestion[] = [];
+    for (let i = 0; i < count; i++) {
+      newDrafts.push({
+        id: `manual-draft-${Date.now()}-${i}-${Math.random()}`,
+        wordId: defaultWordId,
+        question: '',
+        type: 'MEANING',
+        options: ['', '', '', ''],
+        correctAnswer: '',
+        selected: true,
+        source: 'manual',
+      });
+    }
+    setDraftQuestions((prev) => [...prev, ...newDrafts]);
+    toast.success(`Added ${count} blank question ${count > 1 ? 'drafts' : 'draft'} to list below!`);
+  };
+
+  // Batch add questions from selected vocabulary words
+  const handleBatchAddFromWords = () => {
+    if (batchWordIds.length === 0) {
+      toast.error('Please select at least 1 vocabulary word.');
+      return;
+    }
+    const newDrafts: DraftAiQuestion[] = batchWordIds.map((wId, i) => {
+      const wObj = words.find((w: Word) => w.id === wId);
+      return {
+        id: `manual-draft-${Date.now()}-${i}-${Math.random()}`,
+        wordId: wId,
+        question: wObj ? `What is the definition of "${wObj.word}"?` : '',
+        type: 'MEANING' as QuizQuestionType,
+        options: wObj?.meaning ? [wObj.meaning, '', '', ''] : ['', '', '', ''],
+        correctAnswer: wObj?.meaning || '',
+        selected: true,
+        source: 'manual',
+      };
+    });
+    setDraftQuestions((prev) => [...prev, ...newDrafts]);
+    setBatchWordIds([]);
+    toast.success(`Created ${newDrafts.length} question drafts from selected words!`);
   };
 
   // Handle Draft Question Update
@@ -988,122 +1036,254 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
 
           {/* Manual Channel */}
           {activeChannel === 'manual' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between">
+            <div className="space-y-5 animate-in fade-in duration-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b">
                 <div>
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <PenLine className="size-4 text-primary" /> Create Manual Question
+                    <PenLine className="size-4 text-primary" /> Create Manual Questions
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Craft a tailored question with 4 options and mark the correct answer.
+                    Add single detailed questions, batch generate from vocabulary, or add quick blank drafts.
                   </p>
                 </div>
-              </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Target Word <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={manualWordId}
-                    onValueChange={(val: string | null) => setManualWordId(val ?? '')}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select target vocabulary..." />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {words.map((w: Word) => (
-                        <SelectItem key={w.id} value={w.id}>
-                          <span className="font-semibold">{w.word}</span>
-                          {w.meaning ? ` — ${w.meaning}` : ''}
-                          {w.level ? ` (${w.level})` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Question Type
-                  </Label>
-                  <Select
-                    value={manualType}
-                    onValueChange={(val: string | null) => val && setManualType(val as QuizQuestionType)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {QUESTION_TYPES.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Question Text <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  value={manualQuestionText}
-                  onChange={(e) => setManualQuestionText(e.target.value)}
-                  placeholder="e.g. What is the meaning of 'elaborate'? OR Complete the sentence: She made an _____ speech."
-                />
-              </div>
-
-              {/* 4 Options Grid */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Options (Radio button marks the correct answer)
-                </Label>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {manualOptions.map((opt, optIdx) => (
-                    <div
-                      key={optIdx}
-                      className={`flex items-center gap-2.5 rounded-xl border p-2.5 transition-all ${
-                        manualCorrectIndex === optIdx
-                          ? 'border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/30'
-                          : 'border-border/70 bg-card'
+                {/* Sub-modes for manual addition */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="inline-flex rounded-lg bg-muted p-0.5 border border-border/70 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setManualSubTab('form')}
+                      className={`px-3 py-1 rounded-md font-semibold transition-all ${
+                        manualSubTab === 'form'
+                          ? 'bg-card text-foreground shadow-xs'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      <input
-                        type="radio"
-                        name="manual-correct-choice"
-                        id={`manual-opt-radio-${optIdx}`}
-                        checked={manualCorrectIndex === optIdx}
-                        onChange={() => setManualCorrectIndex(optIdx)}
-                        className="size-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                      />
-                      <Input
-                        value={opt}
-                        onChange={(e) => {
-                          const copy: [string, string, string, string] = [...manualOptions];
-                          copy[optIdx] = e.target.value;
-                          setManualOptions(copy);
-                        }}
-                        placeholder={`Option ${optIdx + 1}${manualCorrectIndex === optIdx ? ' (Correct Answer)' : ''}`}
-                        className="h-8 text-xs border-0 bg-transparent focus-visible:ring-0 shadow-none px-1"
-                      />
-                    </div>
-                  ))}
+                      Single Form
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setManualSubTab('batch')}
+                      className={`px-3 py-1 rounded-md font-semibold transition-all ${
+                        manualSubTab === 'batch'
+                          ? 'bg-card text-foreground shadow-xs'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Batch from Words
+                    </button>
+                  </div>
+
+                  <div className="h-4 w-px bg-border hidden sm:block" />
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">Quick Drafts:</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddBlankQuestions(1)}
+                      className="h-7 text-xs font-semibold px-2.5 rounded-lg"
+                    >
+                      +1 Blank
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddBlankQuestions(3)}
+                      className="h-7 text-xs font-semibold px-2.5 rounded-lg"
+                    >
+                      +3 Blanks
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddBlankQuestions(5)}
+                      className="h-7 text-xs font-semibold px-2.5 rounded-lg"
+                    >
+                      +5 Blanks
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
-                <Button
-                  type="button"
-                  onClick={handleAddManualQuestion}
-                  className="gap-2 font-bold px-6"
-                >
-                  <PenLine className="size-4" /> Add Question to Drafts
-                </Button>
-              </div>
+              {manualSubTab === 'batch' ? (
+                /* Batch Create from Words View */
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      Select words from your bank to generate question drafts for each word:
+                    </span>
+                    <Input
+                      placeholder="Search words..."
+                      value={batchSearch}
+                      onChange={(e) => setBatchSearch(e.target.value)}
+                      className="h-8 max-w-xs text-xs"
+                    />
+                  </div>
+
+                  <div className="max-h-60 overflow-y-auto rounded-xl border border-border/70 p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 bg-muted/10">
+                    {words
+                      .filter((w: Word) =>
+                        batchSearch
+                          ? w.word.toLowerCase().includes(batchSearch.toLowerCase()) ||
+                            (w.meaning && w.meaning.toLowerCase().includes(batchSearch.toLowerCase()))
+                          : true
+                      )
+                      .map((w: Word) => {
+                        const isChecked = batchWordIds.includes(w.id);
+                        return (
+                          <div
+                            key={w.id}
+                            onClick={() => {
+                              if (isChecked) {
+                                setBatchWordIds(batchWordIds.filter((id) => id !== w.id));
+                              } else {
+                                setBatchWordIds([...batchWordIds, w.id]);
+                              }
+                            }}
+                            className={`p-2.5 rounded-lg border cursor-pointer flex items-center gap-2.5 text-xs transition-all ${
+                              isChecked
+                                ? 'border-primary/50 bg-primary/10 text-foreground font-semibold shadow-xs'
+                                : 'border-border/60 bg-card text-muted-foreground hover:border-border'
+                            }`}
+                          >
+                            <Checkbox checked={isChecked} />
+                            <div className="min-w-0 flex-1 truncate">
+                              <span className="font-bold text-foreground mr-1.5">{w.word}</span>
+                              {w.meaning && <span className="opacity-70 text-[11px] truncate">{w.meaning}</span>}
+                            </div>
+                            {w.level && <Badge variant="outline" className="text-[10px] px-1 py-0">{w.level}</Badge>}
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-xs text-muted-foreground">
+                      {batchWordIds.length} words selected
+                    </span>
+                    <Button
+                      type="button"
+                      disabled={batchWordIds.length === 0}
+                      onClick={handleBatchAddFromWords}
+                      className="gap-2 font-bold px-6 shadow-md"
+                    >
+                      <Plus className="size-4" /> Create {batchWordIds.length} Question Drafts
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* Single Manual Question Form View */
+                <div className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Target Word <span className="text-destructive">*</span>
+                      </Label>
+                      <Select
+                        value={manualWordId}
+                        onValueChange={(val: string | null) => setManualWordId(val ?? '')}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select target vocabulary..." />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {words.map((w: Word) => (
+                            <SelectItem key={w.id} value={w.id}>
+                              <span className="font-semibold">{w.word}</span>
+                              {w.meaning ? ` — ${w.meaning}` : ''}
+                              {w.level ? ` (${w.level})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Question Type
+                      </Label>
+                      <Select
+                        value={manualType}
+                        onValueChange={(val: string | null) => val && setManualType(val as QuizQuestionType)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {QUESTION_TYPES.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>
+                              {t.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Question Text <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      value={manualQuestionText}
+                      onChange={(e) => setManualQuestionText(e.target.value)}
+                      placeholder="e.g. What is the meaning of 'elaborate'? OR Complete the sentence: She made an _____ speech."
+                    />
+                  </div>
+
+                  {/* 4 Options Grid */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Options (Radio button marks the correct answer)
+                    </Label>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {manualOptions.map((opt, optIdx) => (
+                        <div
+                          key={optIdx}
+                          className={`flex items-center gap-2.5 rounded-xl border p-2.5 transition-all ${
+                            manualCorrectIndex === optIdx
+                              ? 'border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/30'
+                              : 'border-border/70 bg-card'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="manual-correct-choice"
+                            id={`manual-opt-radio-${optIdx}`}
+                            checked={manualCorrectIndex === optIdx}
+                            onChange={() => setManualCorrectIndex(optIdx)}
+                            className="size-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                          />
+                          <Input
+                            value={opt}
+                            onChange={(e) => {
+                              const copy: [string, string, string, string] = [...manualOptions];
+                              copy[optIdx] = e.target.value;
+                              setManualOptions(copy);
+                            }}
+                            placeholder={`Option ${optIdx + 1}${manualCorrectIndex === optIdx ? ' (Correct Answer)' : ''}`}
+                            className="h-8 text-xs border-0 bg-transparent focus-visible:ring-0 shadow-none px-1"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button
+                      type="button"
+                      onClick={handleAddManualQuestion}
+                      className="gap-2 font-bold px-6"
+                    >
+                      <Plus className="size-4" /> Add Question to Drafts
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
@@ -1135,6 +1315,16 @@ export const QuizForm = ({ initialQuiz, mode }: QuizFormProps) => {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleAddBlankQuestions(1)}
+              className="gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/5 shadow-xs"
+            >
+              <Plus className="size-3.5" /> Add Question
+            </Button>
+
             <Button
               type="button"
               variant="ghost"
