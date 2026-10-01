@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Plus, HelpCircle, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Plus, HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppSidebar } from '@/components/common/AppSidebar';
 import { LayoutDashboard, ExternalLink } from 'lucide-react';
@@ -65,14 +65,6 @@ export default function AdminQuizzesPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link href="/admin/quizzes/ai-generator">
-                <Button
-                  variant="outline"
-                  className="rounded-full shadow-xs gap-2 border-primary/30 text-primary hover:bg-primary/5"
-                >
-                  <Sparkles className="size-4" /> AI Generator
-                </Button>
-              </Link>
               <Link href="/admin/quizzes/create">
                 <Button className="rounded-full shadow-md gap-2">
                   <Plus className="size-4" /> Create Quiz
