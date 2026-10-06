@@ -8,8 +8,8 @@ export const APP_ROUTES = {
   learning: '/learning',
   progress: '/learning/progress',
   profile: '/profile',
-  admin: {
-    login: '/admin/login',
-    dashboard: '/admin/dashboard',
+  moderator: {
+    login: '/moderator/login',
+    dashboard: '/moderator/dashboard',
   },
 } as const;

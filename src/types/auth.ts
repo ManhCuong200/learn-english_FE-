@@ -6,6 +6,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   user?: AuthUser;
+  accessToken?: string;
   isTwoFactorRequired?: boolean;
 }
 
@@ -24,7 +25,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: 'USER' | 'ADMIN';
+  role: 'USER' | 'MODERATOR';
   isTwoFactorEnabled?: boolean;
 }
 

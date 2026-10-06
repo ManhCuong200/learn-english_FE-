@@ -20,7 +20,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
   const shouldCheckSession =
-    !pathname.startsWith('/admin') &&
+    !pathname.startsWith('/moderator') &&
     !['/login', '/register', '/forgot-password', '/reset-password'].includes(pathname);
   const query = useQuery({
     ...authQueryOptions(),

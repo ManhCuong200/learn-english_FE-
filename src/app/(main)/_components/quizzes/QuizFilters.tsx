@@ -1,6 +1,6 @@
 'use client';
 
-import { useCategories } from '@/app/admin/_hooks/useCategories';
+import { useCategories } from '@/app/moderator/_hooks/useCategories';
 import { Button } from '@/components/ui/button';
 import { Filter, X } from 'lucide-react';
 

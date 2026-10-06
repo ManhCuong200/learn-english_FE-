@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCategories } from '@/app/admin/_hooks/useCategories';
+import { useCategories } from '@/app/moderator/_hooks/useCategories';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -19,7 +19,7 @@ export const WordFilters = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  // Note: Reuse admin category hook since categories are public
+  // Note: Reuse moderator category hook since categories are public
   const { data: categories = [] } = useCategories();
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');

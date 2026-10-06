@@ -1,1 +1,0 @@
-export { adminKeys, adminQueryKeys } from '@/lib/queryKeys';

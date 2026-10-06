@@ -91,7 +91,7 @@ export interface QuizListResponse {
   data: QuizSummary[];
 }
 
-export interface AdminQuizQuestion {
+export interface ModeratorQuizQuestion {
   id: string;
   quizId: string;
   wordId: string;
@@ -103,7 +103,7 @@ export interface AdminQuizQuestion {
   updatedAt?: string;
 }
 
-export interface AdminQuiz {
+export interface ModeratorQuiz {
   id: string;
   title: string;
   description: string | null;
@@ -111,7 +111,7 @@ export interface AdminQuiz {
   level: string | null;
   totalQuestions: number;
   category?: QuizCategory | null;
-  questions?: AdminQuizQuestion[];
+  questions?: ModeratorQuizQuestion[];
   createdAt: string;
   updatedAt: string;
 }
@@ -147,7 +147,7 @@ export interface UpdateQuizQuestionRequest {
   correctAnswer?: string;
 }
 
-export interface AdminQuizQueryParams {
+export interface ModeratorQuizQueryParams {
   search?: string;
   categoryId?: string;
   level?: string;
@@ -155,8 +155,8 @@ export interface AdminQuizQueryParams {
   limit?: number;
 }
 
-export interface AdminQuizListResponse {
-  data: AdminQuiz[];
+export interface ModeratorQuizListResponse {
+  data: ModeratorQuiz[];
   meta?: {
     total: number;
     page: number;

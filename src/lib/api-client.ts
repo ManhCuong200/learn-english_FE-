@@ -19,17 +19,14 @@ export class ApiError extends Error {
 }
 
 let refreshPromise: Promise<boolean> | null = null;
+let memoryAccessToken: string | null = null;
+
+export const setAccessToken = (token: string | null) => {
+  memoryAccessToken = token;
+};
 
 const getBearerToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  
-  // Try localStorage first
-  const storedToken = localStorage.getItem('accessToken');
-  if (storedToken) return storedToken;
-
-  // Try document.cookie if available
-  const match = document.cookie.match(/(?:^|; )accessToken=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
+  return memoryAccessToken;
 };
 
 const buildUrlWithParams = (
@@ -70,7 +67,14 @@ const refreshTokens = async (): Promise<boolean> => {
           method: 'POST',
           credentials: 'include',
         });
-        return response.ok;
+        if (response.ok) {
+          const data = await response.json().catch(() => null);
+          if (data?.accessToken) {
+            setAccessToken(data.accessToken);
+          }
+          return true;
+        }
+        return false;
       } catch {
         return false;
       } finally {
@@ -110,10 +114,10 @@ export const apiClient = async <T = unknown>(
     const requestBody = isFormData
       ? (body as FormData)
       : typeof body === 'string'
-      ? body
-      : body !== undefined
-      ? JSON.stringify(body)
-      : undefined;
+        ? body
+        : body !== undefined
+          ? JSON.stringify(body)
+          : undefined;
 
     let response = await fetch(buildUrlWithParams(endpoint, params), {
       ...restOptions,
@@ -129,9 +133,8 @@ export const apiClient = async <T = unknown>(
     if (
       response.status === 401 &&
       !endpoint.includes('/auth/refresh') &&
-      !endpoint.includes('/auth/login') &&
-      !endpoint.includes('/auth/logout') &&
-      !endpoint.includes('/auth/me')
+      !endpoint.includes('/login') &&
+      !endpoint.includes('/logout')
     ) {
       const refreshed = await refreshTokens();
       if (refreshed) {
@@ -139,6 +142,11 @@ export const apiClient = async <T = unknown>(
         const retryController = new AbortController();
         const retryTimeoutId = setTimeout(() => retryController.abort(), timeout);
         try {
+          const newToken = getBearerToken();
+          if (newToken) {
+            headers.set('Authorization', `Bearer ${newToken}`);
+          }
+
           response = await fetch(buildUrlWithParams(endpoint, params), {
             ...restOptions,
             body: requestBody,
@@ -162,10 +170,10 @@ export const apiClient = async <T = unknown>(
         response.status === 401
           ? 'Unauthorized access. Please sign in.'
           : response.status === 403
-          ? 'Forbidden. You do not have permission to perform this action.'
-          : response.status >= 500
-          ? 'Internal server error. Please try again later.'
-          : 'Something went wrong.';
+            ? 'Forbidden. You do not have permission to perform this action.'
+            : response.status >= 500
+              ? 'Internal server error. Please try again later.'
+              : 'Something went wrong.';
 
       const message = extractErrorMessage(responseData) ?? defaultMsg;
       throw new ApiError(message, response.status, responseData);

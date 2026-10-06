@@ -9,19 +9,19 @@ export const authKeys = {
   sessions: () => [...authKeys.all, 'sessions'] as const,
 };
 
-export const adminKeys = {
-  all: ['admin'] as const,
-  auth: () => [...adminKeys.all, 'auth'] as const,
-  data: () => [...adminKeys.all, 'data'] as const,
-  categories: () => [...adminKeys.all, 'categories'] as const,
-  category: (id: string) => [...adminKeys.all, 'categories', id] as const,
+export const moderatorKeys = {
+  all: ['moderator'] as const,
+  auth: () => [...moderatorKeys.all, 'auth'] as const,
+  data: () => [...moderatorKeys.all, 'data'] as const,
+  categories: () => [...moderatorKeys.all, 'categories'] as const,
+  category: (id: string) => [...moderatorKeys.all, 'categories', id] as const,
   words: (filters?: Record<string, unknown>) =>
-    [...adminKeys.all, 'words', filters ?? {}] as const,
-  word: (id: string) => [...adminKeys.all, 'words', id] as const,
-  examples: (wordId: string) => [...adminKeys.all, 'examples', wordId] as const,
+    [...moderatorKeys.all, 'words', filters ?? {}] as const,
+  word: (id: string) => [...moderatorKeys.all, 'words', id] as const,
+  examples: (wordId: string) => [...moderatorKeys.all, 'examples', wordId] as const,
   quizzes: (filters?: Record<string, unknown>) =>
-    [...adminKeys.all, 'quizzes', filters ?? {}] as const,
-  quizDetail: (id: string) => [...adminKeys.all, 'quizzes', id] as const,
+    [...moderatorKeys.all, 'quizzes', filters ?? {}] as const,
+  quizDetail: (id: string) => [...moderatorKeys.all, 'quizzes', id] as const,
 };
 
 export const wordKeys = {
@@ -82,10 +82,10 @@ export const dashboardKeys = {
 
 // Legacy exports for backwards compatibility
 export const authQueryKey = authKeys.me();
-export const adminQueryKeys = {
-  auth: adminKeys.auth(),
-  all: adminKeys.data(),
-  categories: adminKeys.categories,
-  words: (search = '') => adminKeys.words({ search }),
-  category: adminKeys.category,
+export const moderatorQueryKeys = {
+  auth: moderatorKeys.auth(),
+  all: moderatorKeys.data(),
+  categories: moderatorKeys.categories,
+  words: (search = '') => moderatorKeys.words({ search }),
+  category: moderatorKeys.category,
 };

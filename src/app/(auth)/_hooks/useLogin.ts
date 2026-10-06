@@ -6,6 +6,7 @@ import { authKeys } from '@/lib/queryKeys';
 import { notifyError, notifySuccess } from '@/lib/notifications';
 import { authMutations } from '@/lib/mutationOptions';
 import type { AuthUser } from '@/types/auth';
+import { setAccessToken } from '@/lib/api-client';
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
@@ -16,6 +17,9 @@ export const useLogin = () => {
     onSuccess: (data) => {
       if (data.isTwoFactorRequired) {
         return; // Let the component handle it
+      }
+      if (data.accessToken) {
+        setAccessToken(data.accessToken);
       }
       queryClient.setQueryData<AuthUser>(authKeys.me(), data.user!);
       notifySuccess(toastManager, {

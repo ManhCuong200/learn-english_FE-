@@ -7,6 +7,7 @@ import { authKeys } from '@/lib/queryKeys';
 import { notifyError, notifySuccess } from '@/lib/notifications';
 import { APP_ROUTES } from '@/constants/routes';
 import { authMutations } from '@/lib/mutationOptions';
+import { setAccessToken } from '@/lib/api-client';
 
 export const useLogout = () => {
   const router = useRouter();
@@ -16,6 +17,7 @@ export const useLogout = () => {
   return useMutation({
     ...authMutations.logout(),
     onSuccess: () => {
+      setAccessToken(null);
       queryClient.setQueryData(authKeys.me(), null);
       queryClient.removeQueries({ queryKey: authKeys.all });
       notifySuccess(toastManager, {
@@ -25,6 +27,7 @@ export const useLogout = () => {
       router.push(APP_ROUTES.login);
     },
     onError: (error) => {
+      setAccessToken(null);
       queryClient.setQueryData(authKeys.me(), null);
       queryClient.removeQueries({ queryKey: authKeys.all });
       notifyError(toastManager, 'Sign out failed', error);
